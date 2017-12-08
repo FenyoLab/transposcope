@@ -1,2 +1,0 @@
-fastq	classification	patientID	number	patient	patient
-fastq	wgs	SRR622457	1	NA12878-4

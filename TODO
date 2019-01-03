@@ -1,0 +1,9 @@
+1. Create Parser for TIPseqHunter files
+2. Validate output using parsed file
+3. Set up bump version
+4. Create a setup script
+5. Set up tox
+6. Set up a arg parser
+7. Set up a simple local http server
+8. Package TranspoScope on pip
+9. Incorporate the bowtie2 shell scripts into python

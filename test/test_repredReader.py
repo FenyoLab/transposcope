@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest import mock
 
-from transposcope.repred_reader import RepredReader
+from src.transposcope.repred_reader import RepredReader
 
 
 class TestRepredReader(TestCase):

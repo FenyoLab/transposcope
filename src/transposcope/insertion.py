@@ -32,7 +32,7 @@ class Insertion:
         if self.COMPLEMENT:
             # TS                             CS    CE/TE
             # |------------------------------|------|TTTTT LINE1
-            self.START = self.TARGET_START - 1
+            self.START = self.TARGET_START
             # self.END = max(self.CLIP_END, self.TARGET_END)
             self.END = self.CLIP_END - 1
             self.INSERTION_SITE = self.CLIP_END
@@ -40,7 +40,7 @@ class Insertion:
             #            CS/TS    CE                          TE
             # LINE1 AAAAA  |------|---------------------------|
             # self.START = min(self.CLIP_START, self.TARGET_START)
-            self.START = self.CLIP_START - 1
+            self.START = min(self.TARGET_START, self.CLIP_START)
             self.END = self.TARGET_END
             self.INSERTION_SITE = self.CLIP_START
 

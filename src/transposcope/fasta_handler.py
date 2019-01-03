@@ -17,7 +17,7 @@ class FastaHandler:
     def set_reference_genome(self, reference_genome_chromosome):
         logging.info('changing reference genome to {}'.format(reference_genome_chromosome))
         file_path = os.path.join(self._reference_genome_folder_path, reference_genome_chromosome + '.fa')
-        with open(file_path, 'rU') as handle:
+        with open(file_path, 'r') as handle:
             parser = SimpleFastaParser(handle)
             self._reference_genome_seq = next(parser)[1].upper()
 
@@ -37,14 +37,18 @@ class FastaHandler:
             raise ValueError("start and end positions must be positive")
         return self._LINE1_REFERENCE_SEQ[start:end]
 
-    def generate_fasta_sequence(self, insertion, other_end):
+    def generate_fasta_sequence(self, insertion, positive_strand=True):
+        print(insertion.START, insertion.END)
+        print(self._reference_genome_seq)
+        print(self._LINE1_REFERENCE_SEQ)
+        print(self._current_chromosome)
         reference_genome_sequence = self.get_reference_nucleotides_in_range(insertion.START, insertion.END,
                                                                             insertion.CHROMOSOME)
         line_1_sequence = self.get_line1_nucleotides_in_range(self.LINE1_START, self.LINE1_END)
         insertion.GENOME_SEQUENCE = reference_genome_sequence
         insertion.LINE1_SEQUENCE = self.get_line1_nucleotides_in_range(self.LINE1_START, self.LINE1_END)
         if insertion.COMPLEMENT:
-            if not other_end:
+            if not positive_strand:
                 line_1_sequence = self.reverse_complement(line_1_sequence)
             return reference_genome_sequence + line_1_sequence
         else:

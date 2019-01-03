@@ -3,19 +3,19 @@ import logging.config
 import os
 import shutil
 
-from transposcope.bam_handler import BamHandler
-from transposcope.fasta_handler import FastaHandler
-from transposcope.file_writer import FileWriter
-from transposcope.gene_handler import GeneHandler
-from transposcope.insertion import Insertion
-from transposcope.read_classifier import ReadClassifier
-from transposcope.reads_dict import ReadsDict
-from transposcope.realigner import Realigner
-from transposcope.repred_reader import RepredReader
+from src.transposcope.bam_handler import BamHandler
+from src.transposcope.constants import LABEL
+from src.transposcope.fasta_handler import FastaHandler
+from src.transposcope.file_writer import FileWriter
+from src.transposcope.gene_handler import GeneHandler
+from src.transposcope.insertion import Insertion
+from src.transposcope.read_classifier import ReadClassifier
+from src.transposcope.reads_dict import ReadsDict
+from src.transposcope.realigner import Realigner
+from src.transposcope.repred_reader import RepredReader
+
 
 # from memory_profiler import profile
-
-LABEL = {'positive': 1, 'negative': 0, 'unlabled': 0.5}
 
 
 def get_config_from_file():
@@ -92,7 +92,7 @@ def main(reference_type, anatomy, sample_type, patient_id, file_id):
     print('starting')
 
     config = get_config_from_file()
-    # TODO - allow for multiple labels - eg : pos, unlabled - pos - negative, pos
+    # TODO - allow for multiple labels - eg : pos, unlabeled - pos - negative, pos
     label = config['input']['label']
     # TODO - make the reference subdirectories using the writer class
     output_folder_path = os.path.realpath(config['output']['root'])

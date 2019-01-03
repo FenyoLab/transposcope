@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from transposcope.insertion import Insertion
+from src.transposcope.insertion import Insertion
 
 
 class TestInsertion(TestCase):

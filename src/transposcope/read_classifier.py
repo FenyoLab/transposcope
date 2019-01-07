@@ -300,7 +300,7 @@ class ReadClassifier:
                 letter_g[i - offset]['s'] = fa_g_seq[i - g_letter_offset]
                 #                    if (l_letter_offset <= i < l_letter_offset + len(fa_l_seq)):
                 #                        letter[i - offset]['s'] = fa_l_seq[i - l_letter_offset]
-
+        print(fa_l_seq)
         for (i, item) in enumerate(letter_l):
             if item['bp']['A'] + item['bp']['G'] + item['bp']['C'] + item['bp']['T'] + item['bp']['N'] != 0:
                 # try:
@@ -329,6 +329,7 @@ class ReadClassifier:
             gz = gzip.compress(str.encode(json_out))
             b64 = base64.standard_b64encode(gz)
             outfile.write(b64)
+
 
         values = [insertion.CHROMOSOME,
                   str(insertion.CLIP_START),

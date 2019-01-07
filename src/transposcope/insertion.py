@@ -11,7 +11,7 @@ class Insertion:
             self.CHROMOSOME = named_tuple.chromosome
             self.TARGET_START = named_tuple.target_start
             self.TARGET_END = named_tuple.target_end
-            self.ALL_COLUMNS = named_tuple
+            self.ALL_COLUMNS = named_tuple._asdict()
         else:
             self.CLIP_START = clip_start
             self.CLIP_END = clip_end

@@ -12,7 +12,7 @@ from src.transposcope.insertion import Insertion
 from src.transposcope.read_classifier import ReadClassifier
 from src.transposcope.reads_dict import ReadsDict
 from src.transposcope.realigner import Realigner
-from src.transposcope.repred_reader import RepredReader
+from src.transposcope.insertion_sites_reader import InsertionSiteReader
 
 
 # from memory_profiler import profile
@@ -88,7 +88,7 @@ def find_files(file_id, anatomy, reference_type, config):
     return repred_file_path, bam_file_path
 
 
-def main(reference_type, anatomy, sample_type, patient_id, file_id):
+def main(reference_type, anatomy, sample_type, patient_id, file_id, bam_name, insertion_list):
     print('starting')
 
     config = get_config_from_file()
@@ -100,11 +100,15 @@ def main(reference_type, anatomy, sample_type, patient_id, file_id):
                                                                                   label, anatomy, sample_type,
                                                                                   patient_id)
     setup_logging(logging_folder=logs_path)
-    logging.info('welcome to TranspoScope')
+    logging.info('--TranspoScope--')
 
-    repred_path, bam_path = find_files(file_id, anatomy, reference_type, config)
+    # repred_path, bam_path = find_files(file_id, anatomy, reference_type, config)
+    bam_folder = os.path.expanduser(config['input']['bam'])
+    bam_path = os.path.join(bam_folder, bam_name)
+    insertion_list_folder = os.path.expanduser(config['input']['insertion_table_dir'])
+    insertion_list_path = os.path.join(insertion_list_folder, insertion_list)
     logging.info(bam_path)
-    repred_reader = RepredReader(repred_path)
+    insertion_sites_reader = InsertionSiteReader(insertion_list_path)
     logging.info('loading bam')
     bam_handler = BamHandler(bam_path)
     fasta_handler = FastaHandler(os.path.expanduser(config['line1']['fasta']),
@@ -113,8 +117,8 @@ def main(reference_type, anatomy, sample_type, patient_id, file_id):
     insertions = []
     reads_dictionary = ReadsDict()
     logging.info('finding target regions')
-    for insertion_stats in repred_reader.read_lines():
-        if insertion_stats.H30_label == LABEL[label]:
+    for insertion_stats in insertion_sites_reader.read_lines():
+        if insertion_stats.label == LABEL[label]:
             temp_insertion = Insertion(named_tuple=insertion_stats)
             reads_in_region = bam_handler.fetch_reads_in_region(temp_insertion)
             reads_dictionary += reads_in_region
@@ -132,8 +136,9 @@ def main(reference_type, anatomy, sample_type, patient_id, file_id):
                                 int(config['line1']['end']), transposcope_path)
     gene_handler = GeneHandler(config['reference']['refFlat'])
     insertions.sort(key=lambda x: x.CHROMOSOME)
-    heading_table = {'Heading': ["ID", "Gene",
-                                 "Probability"], 'Data': []}
+    heading_table = {
+        'Heading': ("ID", "Gene", "Probability"),
+        'data': []}
     for insertion in insertions:
         file_name = "{i.CHROMOSOME}_{i.START}-{i.END}".format(i=insertion)
         insertion.fasta_string = fasta_handler.generate_fasta_sequence(insertion)
@@ -144,25 +149,34 @@ def main(reference_type, anatomy, sample_type, patient_id, file_id):
                                                            insertion.keys_of_reads_in_target_region)
         sorted_bam_path = realigner.realign(fasta_path, fastq1_path, fastq2_path, file_name)
         gene_info = gene_handler.find_nearest_gene(insertion.CHROMOSOME, insertion.INSERTION_SITE)
-        # TODO - use a format string for this
-        heading_table['Data'].append([
-            str(insertion.CHROMOSOME) + '-' + str(insertion.CLIP_START) + '(' + str(
-                insertion.CLIP_END - insertion.CLIP_START) + ')',
-            gene_info,
-            str(round(insertion.PRED, 2))
+
+        # heading_table['Data']\
+        heading_table['data'].append(['{}-{}({})'.format(
+            insertion.CHROMOSOME,
+            insertion.CLIP_START,
+            insertion.CLIP_END - insertion.CLIP_START
+        ),
+            ','.join(gene_info),
+            "{:.2f}".format(insertion.PRED)
         ])
-        #     TODO - use realignment files to create JSON
         classifier.classify_insertion(insertion, sorted_bam_path)
         #     TODO - write out bedfile
+        #     TODO - write out index file
         #     TODO - delete local realignment files (test this)
+        #     TODO - add fastq to removal
         if config['output']['removeAlignmentFiles'] is 'Y':
             if os.path.exists(fasta_path):
-                shutil.rmtree(fasta_path)
+                shutil.rmtree(os.path.dirname(fasta_path))
             if os.path.exists(sorted_bam_path):
-                shutil.rmtree(sorted_bam_path)
+                shutil.rmtree(os.path.dirname(sorted_bam_path))
+        break
     file_writer.write_json(os.path.join(transposcope_path, 'table_info.json.gz.txt'), heading_table)
 
 
 if __name__ in '__main__':
-    main('fp', 'pancreatic', 'normal', 'A152', 's5_9_SL31275')
+    main('fp',
+         'test_anatomy',
+         'test_type', 'test_patient_name', 'test_patient_id',
+         'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
+         'A-Normal_GTCGTAGA_L003001.tab')
     # reference_type, anatomy, sample_type, patient_id

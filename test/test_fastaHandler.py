@@ -34,11 +34,11 @@ class TestFastaHandler(TestCase):
         self.assertEqual('ACGTACGT', result)
 
     def test_generate_fasta_sequence_not_complement(self):
-        result = self.fasta_handler.generate_fasta_sequence(Insertion(None, 1, 8, 0, 2))
+        result = self.fasta_handler.generate_fasta_sequence(Insertion(None, 1, 8, 1, 2))
         self.assertEqual('ACGTACGTTCGATCGA', result)
 
     def test_generate_fasta_sequence_complement(self):
-        result = self.fasta_handler.generate_fasta_sequence(Insertion(None, 0, 8, 6, 8))
+        result = self.fasta_handler.generate_fasta_sequence(Insertion(None, 1, 8, 6, 8))
         self.assertEqual('TCGATCGACGTACGT', result)
 
     def test_reverse_complement(self):

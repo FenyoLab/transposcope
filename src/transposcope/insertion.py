@@ -5,13 +5,12 @@ class Insertion:
         self.GENOME_SEQUENCE = None
         self.LINE1_SEQUENCE = None
         if named_tuple:
-            self.CLIP_START = named_tuple.H2_ClipS
-            self.CLIP_END = named_tuple.H3_ClipE
-            self.PRED = named_tuple.H31_pred
-            self.CHROMOSOME = named_tuple.H1_ClipChr
-            self.TARGET_START = named_tuple.H6_TargS
-            self.TARGET_END = named_tuple.H7_TargE
-            self.CLIP_SC = named_tuple.H4_ClipSC
+            self.CLIP_START = named_tuple.clip_start
+            self.CLIP_END = named_tuple.clip_end
+            self.PRED = named_tuple.pred
+            self.CHROMOSOME = named_tuple.chromosome
+            self.TARGET_START = named_tuple.target_start
+            self.TARGET_END = named_tuple.target_end
             self.ALL_COLUMNS = named_tuple
         else:
             self.CLIP_START = clip_start
@@ -32,7 +31,7 @@ class Insertion:
         if self.COMPLEMENT:
             # TS                             CS    CE/TE
             # |------------------------------|------|TTTTT LINE1
-            self.START = self.TARGET_START
+            self.START = self.TARGET_START - 1
             # self.END = max(self.CLIP_END, self.TARGET_END)
             self.END = self.CLIP_END - 1
             self.INSERTION_SITE = self.CLIP_END
@@ -40,7 +39,7 @@ class Insertion:
             #            CS/TS    CE                          TE
             # LINE1 AAAAA  |------|---------------------------|
             # self.START = min(self.CLIP_START, self.TARGET_START)
-            self.START = min(self.TARGET_START, self.CLIP_START)
+            self.START = min(self.TARGET_START, self.CLIP_START) - 1
             self.END = self.TARGET_END
             self.INSERTION_SITE = self.CLIP_START
 
@@ -56,7 +55,7 @@ class Insertion:
         self.reads_in_target_region = reads
 
     def __str__(self) -> str:
-        return self.CHROMOSOME + ':' + str(self.TARGET_START) + '-' + str(self.TARGET_END)
+        return "{}:{}-{}".format(self.CHROMOSOME, self.TARGET_START, self.TARGET_END)
 
     def __repr__(self) -> str:
         return self.CHROMOSOME + ':' + str(self.TARGET_START) + '-' + str(

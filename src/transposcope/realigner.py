@@ -70,14 +70,14 @@ class Realigner:
         # Python 3.4
         subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
 
-        dir_path = [
-            os.path.join(self.output_path, 'fastq'),
-            os.path.join(self.output_path, 'bam'),
-            os.path.join(self.output_path, 'sam'),
-            os.path.join(self.output_path, 'fasta_indexed')]
-        for cur_path in dir_path:
-            file_list = os.listdir(cur_path)
-            for fileName in file_list:
-                os.remove(cur_path + "/" + fileName)
+        # dir_path = [
+        #     os.path.join(self.output_path, 'fastq'),
+        #     os.path.join(self.output_path, 'bam'),
+        #     os.path.join(self.output_path, 'sam'),
+        #     os.path.join(self.output_path, 'fasta_indexed')]
+        # for cur_path in dir_path:
+        #     file_list = os.listdir(cur_path)
+        #     for fileName in file_list:
+        #         os.remove(cur_path + "/" + fileName)
 
         return bam_sorted_path

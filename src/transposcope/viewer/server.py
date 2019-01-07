@@ -4,6 +4,8 @@ import socketserver
 
 web_dir = os.path.join(os.path.dirname(__file__), 'web')
 
+os.chdir(web_dir)
+
 PORT = 8000
 Handler = http.server.SimpleHTTPRequestHandler
 

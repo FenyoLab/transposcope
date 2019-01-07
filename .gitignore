@@ -15,6 +15,7 @@ generate_json.sh
 
 scratchpad.py
 
+*/bower_components/
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python

@@ -1,33 +1,31 @@
 from collections import namedtuple
 
 
-class RepredReader:
-    def __init__(self, repred_file_path, repred_type='tipseq', header=None):
+class InsertionSiteReader:
+    def __init__(self, insertion_sites_file_path, header=None):
         """
 
-        :param repred_file_path: 
+        :param insertion_sites_file_path:
         :param repred_type: 
         :param header: 
         """
-        self.repred_type = repred_type
+        print('FP', insertion_sites_file_path)
         if header is None:
             header = {
-                'strings': ['H1_ClipChr'],
-                'ints': ['H2_ClipS', 'H3_ClipE', 'H4_ClipSC', 'H6_TargS', 'H7_TargE'],
-                'floats': ['H30_label', 'H31_pred']
+                'strings': ['chromosome'],
+                'ints': ['target_start', 'target_end', 'clip_start', 'clip_end'],
+                'floats': ['label', 'pred']
             }
         try:
-            self.repred_file = open(repred_file_path, 'r')
+            self.repred_file = open(insertion_sites_file_path, 'r')
         except IOError:
             print('repred file path invalid')
         self.header = header
         self.all_headers = self.repred_file.readline().strip().split('\t')
-        # TODO - only save the columns that matter
-        self.RepredLine = namedtuple('RepredLine', self.all_headers)
+        self.insertion_line = namedtuple('insertion_line', self.all_headers)
 
     def __parse_line(self, line):
         line = line.strip().split('\t')
-        # TODO check if this should be a dict
         line = dict(zip(self.all_headers, line))
         needed_values_from_file = line
         for string in self.header['strings']:
@@ -46,5 +44,5 @@ class RepredReader:
         """
         for line in self.repred_file.readlines():
             line = self.__parse_line(line)
-            line_with_header = self.RepredLine(**line)
+            line_with_header = self.insertion_line(**line)
             yield (line_with_header)

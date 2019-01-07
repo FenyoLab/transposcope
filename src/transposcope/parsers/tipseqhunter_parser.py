@@ -11,7 +11,6 @@ def calculate_orientation(index, clip_start, clip_end, target_start, target_end)
     Ambiguous cases where the clipping center falls in the center of the target region are treated as being on the
     positive strand.
 
-    TODO: see if there is a better method of calculating strand from data in repred files
 
     :param index: The current row index
     :param clip_start: The potential start position of the insertion site

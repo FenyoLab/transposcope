@@ -33,7 +33,7 @@ class ReadClassifier:
         self._L1_HS_REF_SEQ_END = l1_end
         self._wd = output_dir
         self._heading = ["chr#", "clipS", "count", "-/-", "g/-", "l1/-", "j/-", "-/g", "g/g", "l1/g", "j/g", "-/l1",
-                         "g/l1", "l1/l1", "j/l1", "-/j", "g/j", "l1/j", "j/j", "sum", "ClipSC", "junction"]
+                         "g/l1", "l1/l1", "j/l1", "-/j", "g/j", "l1/j", "j/j", "sum", "junction"]
         self._heading_len = [len(s) for s in self._heading]
 
     def classify_insertion(self, insertion, bamfile):
@@ -335,7 +335,6 @@ class ReadClassifier:
                   str(len(read_dict)),
                   # '\t'.join(str(x) for x in read_type_counts),
                   str(sum(read_type_counts)),
-                  str(insertion.CLIP_SC),
                   str(read_type_counts[3]
                       + read_type_counts[7]
                       + read_type_counts[11]

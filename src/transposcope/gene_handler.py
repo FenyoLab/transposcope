@@ -10,7 +10,7 @@ class GeneHandler:
         self._refFlat = pd.read_csv(gene_reference_path, sep='\t',
                                     low_memory=False, names=header).fillna('N/A')
 
-    def find_nearest_gene(self, chromosome, insertion_site):
+    def find_nearest_gene(self, chromosome: str, insertion_site: int) -> (str, str):
         found = False
         gene = ''
         color_grad = ["rgb(180, 218, 4)",

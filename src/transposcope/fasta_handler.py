@@ -37,19 +37,14 @@ class FastaHandler:
             raise ValueError("start and end positions must be positive")
         return self._LINE1_REFERENCE_SEQ[start:end]
 
-    def generate_fasta_sequence(self, insertion, positive_strand=True):
-        print(insertion.START, insertion.END)
-        print(self._reference_genome_seq)
-        print(self._LINE1_REFERENCE_SEQ)
-        print(self._current_chromosome)
+    def generate_fasta_sequence(self, insertion):
         reference_genome_sequence = self.get_reference_nucleotides_in_range(insertion.START, insertion.END,
                                                                             insertion.CHROMOSOME)
         line_1_sequence = self.get_line1_nucleotides_in_range(self.LINE1_START, self.LINE1_END)
         insertion.GENOME_SEQUENCE = reference_genome_sequence
         insertion.LINE1_SEQUENCE = self.get_line1_nucleotides_in_range(self.LINE1_START, self.LINE1_END)
         if insertion.COMPLEMENT:
-            if not positive_strand:
-                line_1_sequence = self.reverse_complement(line_1_sequence)
+            line_1_sequence = self.reverse_complement(line_1_sequence)
             return reference_genome_sequence + line_1_sequence
         else:
             return line_1_sequence + reference_genome_sequence

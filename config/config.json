@@ -1,25 +1,25 @@
 {
-    "line1":{
-        "fasta":"~/PycharmProjects/transposcope_backend/reference/line1Fa/Homo_sapiens_L1.L1HS.fa",
-        "start":"5064",
-        "end":"6064",
-        "db":"write-math"
-    },
-    "input":{
-        "bam":"~/PycharmProjects/transposcope_backend/input/bamfiles/hg19",
-        "repred":"~/PycharmProjects/transposcope_backend/input/results/",
-        "label":"positive"
-    },
-    "reference":{
-        "hg":"~/PycharmProjects/transposcope_backend/reference/chromFa/",
-        "refFlat":"~/PycharmProjects/transposcope_backend/reference/refFlat.txt"
-    },
-    "output":{
-        "root": "./output",
-        "removeAlignmentFiles": "N"
-    },
-    "bowtie":{
-        "fastaIndexed": "~/PycharmProjects/transposcope_backend/shell_scripts/runBowtie2v223BuildIndex.sh",
-        "realign": "~/PycharmProjects/transposcope_backend/shell_scripts/runBowtie2v223PE.sh"
-    }
+  "line1":{
+    "fasta":"/media/mark/Data/transposcope/reference/Homo_sapiens_L1.L1HS.fa",
+    "start":"5064",
+    "end":"6064",
+    "db":"write-math"
+  },
+  "input":{
+    "bam":"/media/mark/Data/transposcope/bams/",
+    "insertion_table_dir":"/home/mark/projects/fenyolab/transposcope/output/insertion_tables/",
+    "label":"positive"
+  },
+  "reference":{
+    "hg":"/media/mark/Data/transposcope/reference/hg19/",
+    "refFlat":"/media/mark/Data/transposcope/reference/refFlat.txt"
+  },
+  "output":{
+    "root": "./output",
+    "removeAlignmentFiles": "N"
+  },
+  "bowtie":{
+    "fastaIndexed": "~/projects/fenyolab/transposcope/shell_scripts/runBowtie2v223BuildIndex.sh",
+    "realign": "~/projects/fenyolab/transposcope/shell_scripts/runBowtie2v223PE.sh"
+  }
 }

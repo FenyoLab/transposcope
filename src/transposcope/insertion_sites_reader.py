@@ -4,17 +4,21 @@ from collections import namedtuple
 class InsertionSiteReader:
     def __init__(self, insertion_sites_file_path, header=None):
         """
-
         :param insertion_sites_file_path:
-        :param repred_type: 
-        :param header: 
+        :param header:
         """
         print('FP', insertion_sites_file_path)
         if header is None:
             header = {
                 'strings': ['chromosome'],
-                'ints': ['target_start', 'target_end', 'clip_start', 'clip_end'],
-                'floats': ['label', 'pred']
+                'ints': [
+                    'target_start',
+                    'target_end',
+                    'clip_start',
+                    'clip_end'
+                ],
+                'floats': ['label', 'pred'],
+                'bools': ['three_prime_end']
             }
         try:
             self.repred_file = open(insertion_sites_file_path, 'r')
@@ -33,14 +37,25 @@ class InsertionSiteReader:
         for integer in self.header['ints']:
             needed_values_from_file[integer] = int(line[integer])
         for floating_point in self.header['floats']:
-            needed_values_from_file[floating_point] = float(line[floating_point])
+            needed_values_from_file[floating_point] = float(
+                line[floating_point]
+            )
+        for boolean in self.header['bools']:
+            needed_values_from_file[boolean] = line[boolean] == 'True'
         return needed_values_from_file
 
     def read_lines(self):
         """
         Iterator which returns the next line of the file as a named tuple
 
-        :rtype: named_tuple(H1_ClipChr, H2_ClipS, H3_ClipE, H6_TargS, H7_TargE, H31_pred)
+        :rtype: named_tuple(
+            H1_ClipChr,
+            H2_ClipS,
+            H3_ClipE,
+            H6_TargS,
+            H7_TargE,
+            H31_pred
+        )
         """
         for line in self.repred_file.readlines():
             line = self.__parse_line(line)

@@ -3,13 +3,20 @@ import sys
 import pandas as pd
 
 
-def calculate_orientation(index, clip_start, clip_end, target_start, target_end):
+def calculate_orientation(
+        index,
+        clip_start,
+        clip_end,
+        target_start,
+        target_end
+):
     """
-    Calculate the orientation of the insertion. The clip start and end should be on either the left or the
-    right of the target region depending on the strand.
+    Calculate the orientation of the insertion. The clip start and end should
+    be on either the left or the right of the target region depending on the
+    strand.
 
-    Ambiguous cases where the clipping center falls in the center of the target region are treated as being on the
-    positive strand.
+    Ambiguous cases where the clipping center falls in the center of the target
+    region are treated as being on the positive strand.
 
 
     :param index: The current row index
@@ -31,24 +38,31 @@ def calculate_orientation(index, clip_start, clip_end, target_start, target_end)
 
 def load_repred(filepath: str) -> pd.DataFrame:
     df_repred = pd.read_table(filepath)
-    # df_required_cols = df_repred[["H5_TargChr", "H6_TargS", "H7_TargE", "H2_ClipS", "H3_ClipE", "strand", "H18_EnzmCS"]]
-
     return df_repred
 
 
 def validate_repred(repred_df: pd.DataFrame) -> bool:
-    mismatches = repred_df[repred_df.apply(lambda x: x["H1_ClipChr"] != x["H5_TargChr"], axis=1)].index.values
+    mismatches = repred_df[
+        repred_df.apply(lambda x: x["H1_ClipChr"] != x["H5_TargChr"], axis=1)
+    ].index.values
     print(mismatches + 2)
     if len(mismatches) > 0:
         raise ValueError(
-            "In row(s) {} the clipping chromosome does not match the target chromosome.".format(mismatches + 2))
+            "In row(s) {} the clipping chromosome does not "
+            "match the target chromosome.".format(mismatches + 2))
     return True
     # TODO - add tests to make sure that coordinates are numbers, etc
 
 
 def add_orientation(df: pd.DataFrame) -> pd.DataFrame:
     df['strand'] = df.apply(
-        lambda x: calculate_orientation(x.name, x.H2_ClipS, x.H3_ClipE, x.H6_TargS, x.H7_TargE), axis=1)
+        lambda x: calculate_orientation(
+            x.name,
+            x.H2_ClipS,
+            x.H3_ClipE,
+            x.H6_TargS,
+            x.H7_TargE
+        ), axis=1)
     return df
 
 
@@ -57,16 +71,45 @@ def convert_dataframe(repred_dataframe: pd.DataFrame) -> pd.DataFrame:
 
     :type repred_dataframe: object
     """
-    required_cols = ["H5_TargChr", "H6_TargS", "H7_TargE", "H2_ClipS", "H3_ClipE", "H18_EnzmCS", "H30_label",
-                     "H31_pred"]
+    required_cols = [
+        "H5_TargChr",
+        "H6_TargS",
+        "H7_TargE",
+        "H2_ClipS",
+        "H3_ClipE",
+        "H18_EnzmCS",
+        "H30_label",
+        "H31_pred"]
     transcposcope_df = repred_dataframe[required_cols].copy()
     del repred_dataframe
     transcposcope_df = add_orientation(transcposcope_df)
     transcposcope_df['3_prime_end'] = True
-    transcposcope_df.columns = ['chromosome', 'target_start', 'target_end', 'clip_start', 'clip_end',
-                                'enzyme_cut_sites', 'label', 'pred', 'strand', 'three_prime_end']
-    transcposcope_df = transcposcope_df[['chromosome', 'target_start', 'target_end', 'clip_start', 'clip_end',
-                                         'strand', 'label', 'pred', 'three_prime_end', 'enzyme_cut_sites']]
+    transcposcope_df.columns = [
+        'chromosome',
+        'target_start',
+        'target_end',
+        'clip_start',
+        'clip_end',
+        'enzyme_cut_sites',
+        'label',
+        'pred',
+        'strand',
+        'three_prime_end'
+    ]
+    transcposcope_df = transcposcope_df[
+        [
+            'chromosome',
+            'target_start',
+            'target_end',
+            'clip_start',
+            'clip_end',
+            'strand',
+            'label',
+            'pred',
+            'three_prime_end',
+            'enzyme_cut_sites'
+        ]
+    ]
     return transcposcope_df
 
 
@@ -76,7 +119,11 @@ def main(filepath, only_gold_standard=False):
     if validate_repred(df):
         print("Repred is valid")
     df = convert_dataframe(df)
-    df.to_csv('output/insertion_tables/{}.tab'.format(file_name), sep='\t', index=False)
+    df.to_csv(
+        'output/insertion_tables/{}.tab'.format(file_name),
+        sep='\t',
+        index=False
+    )
 
 
 if __name__ == '__main__':

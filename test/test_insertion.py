@@ -12,5 +12,3 @@ class TestInsertion(TestCase):
     def test_calculate_if_insertion_is_complement_false(self):
         test_insertion = Insertion('chr1', 1, 100, 1, 10, 1)
         self.assertFalse(test_insertion.COMPLEMENT)
-
-

@@ -6,7 +6,7 @@ from src.transposcope.parsers import tipseqhunter_parser
 @pytest.fixture()
 def repred_dataframe():
     return tipseqhunter_parser.load_repred(
-        'test/parsers/examples/example.repred'
+        'test/parsers/examples/tipseqhunter.repred'
     )
 
 

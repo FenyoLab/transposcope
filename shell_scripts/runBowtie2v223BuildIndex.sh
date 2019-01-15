@@ -3,7 +3,7 @@
 # bash runBowtie2v223BuildIndex.sh ./FAST/ovariant/918/918_T/fasta/chr5_41600126-41600121.fasta ./FAST/ovariant/918/918_T/fasta/chr5_41600126-41600121.indexed.fasta
 # TODO - add check for path, throw error if not found
 #bowtie2path=/Users/markgrivainis/Documents/NYU_Lab/tipseq_hunter/include/bowtie2-2.2.7
-bowtie2path=/home/mark/miniconda3/envs/transposcope/bin/
+bowtie2path=/home/mark/miniconda3/bin/
 infasta=$1
 outfasta=$2
 echo "infasta=$infasta"

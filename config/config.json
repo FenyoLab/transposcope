@@ -16,7 +16,7 @@
   },
   "output":{
     "root": "./output",
-    "removeAlignmentFiles": "N"
+    "removeAlignmentFiles": "Y"
   },
   "bowtie":{
     "fastaIndexed": "~/projects/fenyolab/transposcope/shell_scripts/runBowtie2v223BuildIndex.sh",

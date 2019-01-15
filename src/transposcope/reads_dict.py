@@ -19,8 +19,12 @@ class ReadsDict(dict):
         elif len(found_read) == 0:
             raise ValueError("There should not be empty lists at this point")
         else:
-            if found_read[0].is_read2 and v.is_read1 or \
-                    found_read[0].is_read1 and v.is_read2:
+            if (
+                found_read[0].is_read2
+                and v.is_read1
+                or found_read[0].is_read1
+                and v.is_read2
+            ):
                 self[v.query_name].insert(v.is_read2, v)
                 return 0
         return None

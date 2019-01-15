@@ -1,15 +1,15 @@
 class Insertion:
     def __init__(
-            self,
-            chromosome=None,
-            target_start=None,
-            target_end=None,
-            clip_start=None,
-            clip_end=None,
-            pred=None,
-            clip_sc=None,
-            line1_end=None,
-            named_tuple=None
+        self,
+        chromosome=None,
+        target_start=None,
+        target_end=None,
+        clip_start=None,
+        clip_end=None,
+        pred=None,
+        clip_sc=None,
+        line1_end=None,
+        named_tuple=None,
     ):
         # TODO - Make sure that these variables are needed
         self.COMPLEMENT = False
@@ -30,12 +30,13 @@ class Insertion:
             self.CHROMOSOME = chromosome
             self.TARGET_START = target_start
             self.TARGET_END = target_end
-            self.ALL_COLUMNS = {'a': self.CLIP_START,
-                                'b': self.CLIP_END,
-                                'c': self.PRED,
-                                'd': self.TARGET_START,
-                                'e': self.TARGET_END,
-                                }
+            self.ALL_COLUMNS = {
+                "a": self.CLIP_START,
+                "b": self.CLIP_END,
+                "c": self.PRED,
+                "d": self.TARGET_START,
+                "e": self.TARGET_END,
+            }
         self.read_keys_in_target_region = None
         self.calculate_if_insertion_is_complement()
         if self.COMPLEMENT:
@@ -55,7 +56,7 @@ class Insertion:
 
     def calculate_if_insertion_is_complement(self):
         if (self.CLIP_START + self.CLIP_END) / 2 > (
-                self.TARGET_START + self.TARGET_END
+            self.TARGET_START + self.TARGET_END
         ) / 2:
             self.COMPLEMENT = True
 
@@ -64,12 +65,17 @@ class Insertion:
 
     def __str__(self) -> str:
         return "{}:{}-{}".format(
-            self.CHROMOSOME,
-            self.TARGET_START,
-            self.TARGET_END
+            self.CHROMOSOME, self.TARGET_START, self.TARGET_END
         )
 
     def __repr__(self) -> str:
-        return self.CHROMOSOME + ':' + str(self.TARGET_START) + '-' + str(
-            self.TARGET_END) + '(' + \
-               str(len(self.reads_in_target_region)) + ')'
+        return (
+            self.CHROMOSOME
+            + ":"
+            + str(self.TARGET_START)
+            + "-"
+            + str(self.TARGET_END)
+            + "("
+            + str(len(self.reads_in_target_region))
+            + ")"
+        )

@@ -3,7 +3,7 @@
 # bash runBowtie2v223PE.sh ./FAST/ovariant/918/918_T/fasta/chr5_41600126-41600121.indexed.fasta ./FAST/ovariant/918/918_T/fastq/chr5_41600126-41600121.R1.fastq ./FAST/ovariant/918/918_T/fastq/chr5_41600126-41600121.R2.fastq ./FAST/ovariant/918/918_T/sam/chr5_41600126-41600121.sam 2 1000 FALSE
 # TODO - add check for path, throw error if not found
 #bowtie2path=/Users/markgrivainis/Documents/NYU_Lab/tipseq_hunter/include/bowtie2-2.2.7
-bowtie2path=/home/mark/miniconda3/envs/transposcope/bin/
+bowtie2path=/home/mark/miniconda3/bin/
 refindex=$1
 read1fastq=$2
 read2fastq=$3

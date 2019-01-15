@@ -40,4 +40,4 @@ def test_orientation_calculation_with_central_clipping():
 
 def test_data_extraction_from_repred(repred_dataframe):
     transposcope_df = tipseqhunter_parser.convert_dataframe(repred_dataframe)
-    assert transposcope_df.shape == (10, 10)
+    assert transposcope_df.shape == (10, 11)

@@ -197,16 +197,15 @@ def main(reference_type,
     reads_dictionary = ReadsDict()
     logging.info('finding target regions')
     for insertion_stats in insertion_sites_reader.read_lines():
-        if insertion_stats.label == LABEL[label]:
-            temp_insertion = Insertion(
-                named_tuple=insertion_stats
-            )
-            reads_in_region = bam_handler.fetch_reads_in_region(
-                temp_insertion
-            )
-            reads_dictionary += reads_in_region
-            temp_insertion.read_keys_in_target_region = reads_in_region.keys()
-            insertions.append(temp_insertion)
+        temp_insertion = Insertion(
+            named_tuple=insertion_stats
+        )
+        reads_in_region = bam_handler.fetch_reads_in_region(
+            temp_insertion
+        )
+        reads_dictionary += reads_in_region
+        temp_insertion.read_keys_in_target_region = reads_in_region.keys()
+        insertions.append(temp_insertion)
     logging.info('finding pairs')
     for read in bam_handler.all_reads():
         if read.query_name in reads_dictionary:
@@ -274,16 +273,15 @@ def main(reference_type,
             insertion,
             sorted_bam_path
         )
-        #     TODO - write out bedfile
-        #     TODO - write out index file
-        #     TODO - delete local realignment files (test this)
-        #     TODO - add fastq to removal
-        if config['output']['removeAlignmentFiles'] is 'Y':
-            if os.path.exists(fasta_path):
-                shutil.rmtree(os.path.dirname(fasta_path))
-            if os.path.exists(sorted_bam_path):
-                shutil.rmtree(os.path.dirname(sorted_bam_path))
-        break
+    #     TODO - write out bedfile
+    #     TODO - write out index file
+    #     TODO - delete local realignment files (test this)
+    #     TODO - add fastq to removal
+    if config['output']['removeAlignmentFiles'] is 'Y':
+        if os.path.exists(fasta_path):
+            shutil.rmtree(os.path.dirname(fasta_path))
+        if os.path.exists(sorted_bam_path):
+            shutil.rmtree(os.path.dirname(sorted_bam_path))
 
     file_writer.write_json(
         os.path.join(

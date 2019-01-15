@@ -42,7 +42,8 @@ def validate_repred(repred_df: pd.DataFrame) -> bool:
     mismatches = repred_df[
         repred_df.apply(lambda x: x["H1_ClipChr"] != x["H5_TargChr"], axis=1)
     ].index.values
-    print(mismatches + 2)
+    index_offset = 2
+    print(mismatches + index_offset)
     if len(mismatches) > 0:
         raise ValueError(
             "In row(s) {} the clipping chromosome does not "
@@ -101,12 +102,14 @@ def convert_dataframe(repred_dataframe: pd.DataFrame) -> pd.DataFrame:
             "clip_start",
             "clip_end",
             "strand",
-            "label",
             "pred",
             "three_prime_end",
             "enzyme_cut_sites",
         ]
     ]
+    # TODO : check that 160 is the correct distance for the primer
+    transcposcope_df["me_start"] = 6064 - 160
+    transcposcope_df["me_end"] = 6064
     return transcposcope_df
 
 

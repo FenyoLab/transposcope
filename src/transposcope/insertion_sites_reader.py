@@ -17,7 +17,7 @@ class InsertionSiteReader:
                     "clip_start",
                     "clip_end",
                 ],
-                "floats": ["label", "pred"],
+                "floats": ["pred"],
                 "bools": ["three_prime_end"],
             }
         try:

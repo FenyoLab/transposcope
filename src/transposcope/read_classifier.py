@@ -79,6 +79,7 @@ class ReadClassifier:
         max_l1 = self.L1_REF_SEQ_END
         min_g = insertion.TARGET_START
         max_g = insertion.TARGET_END
+        print('length', max_g - min_g)
         # print(min_g, max_g)
         complement = 0
         if insertion.COMPLEMENT:
@@ -90,7 +91,8 @@ class ReadClassifier:
             max_g = zero_ - 1
         else:
             zero = insertion.CLIP_END
-            zero_ = insertion.CLIP_START
+            # zero_ = insertion.CLIP_START
+            zero_ = min(insertion.CLIP_START, insertion.TARGET_START)
             j_start = 1000
             j_end = 1000 + (zero - zero_) - 1
             min_g = zero_
@@ -613,9 +615,20 @@ class ReadClassifier:
                                     j - mins[0]
                                 ]["X"] += 1
                     for i in range(b_start, b_end):
-                        json_data["bins"][bins[0]]["coverage"][i - mins[0]][
-                            s_query[i - qs_start]
-                        ] += 1
+                        try:
+                            json_data["bins"][bins[0]]["coverage"][i - mins[0]][
+                                s_query[i - qs_start]
+                            ] += 1
+                        except:
+                            print(bins)
+                            print(complement)
+                            print('qs:', qs_start)
+                            print(b_start, b_end)
+                            print(i)
+                            print(mins[0])
+                            print('i -:', i - mins[0])
+                            print(len(json_data["bins"][bins[0]]["coverage"]))
+                            raise IndexError
                         json_data["bins"][bins[0]]["coverage"][i - mins[0]][
                             "y"
                         ] += 1

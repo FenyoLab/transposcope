@@ -7,9 +7,9 @@ Description: Parser which extracts relavant data from MELT vcf files and
              outputs a tab delimited file usable by TranspoScope.
 """
 
-from collections import namedtuple
 import os
 import re
+import sys
 
 
 def load_vcf(file_path):
@@ -69,6 +69,24 @@ def parse_meta_info(melt_file_handler):
     return meta_data, header
 
 
+def parse_row(vcf_row, header):
+    """Converts a row from the vcf file into a dictionary using the given
+    header.
+
+    @param row:  List of items from a row in the vcf file
+    @type  row:  list(str)
+
+    @param row:  List containing the column names from the vcf file
+    @type  row:  list(str)
+
+    @return:  Dictionary representing the row.
+    @rtype :  dict
+
+    @raise e:  Description
+    """
+    return dict(zip(header, vcf_row))
+
+
 def parse_vcf_content(melt_file_handler, header):
     """return the contents of the melt vcf file as a list of loci
 
@@ -81,14 +99,102 @@ def parse_vcf_content(melt_file_handler, header):
 
     @raise e:  None
     """
-    insertion = namedtuple("Insertion", header)
     contents = []
     for line in melt_file_handler:
-        print(insertion(line.split()))
+        contents.append(parse_row(line.split(), header))
+        contents[-1]["INFO"] = {
+            x.split("=")[0]: x.split("=")[1]
+            for x in contents[-1]["INFO"].split(";")
+        }
     return contents
 
 
-if __name__ in "__main__":
-    print(os.getcwd())
-    for row in load_vcf("./test/parsers/examples/melt.vcf"):
-        print(row)
+def _find_strand(row_info):
+    name, start, end, polarity = row_info["MEINFO"].split(",")
+    return name, start, end, polarity
+
+
+# TODO : rename this method
+def retrieve_required_data(extracted_vcf_data, target_width=1000):
+    """Reformat the data from the vcf file into the format required by
+    transposcope
+
+    @param extracted_vcf_data:  The contents of the vcf file.
+    @type  extracted_vcf_data:  list(dict(str))
+
+    @param target_width:  The specified width of the target region.
+    @type  target_width:  int
+
+    @return:  Table containing the formated data
+    @rtype :  list(list(values))
+
+    @raise e:  Description
+    """
+    formated_table = [
+        [
+            "chromosome",
+            "target_start",
+            "target_end",
+            "clip_start",
+            "clip_end",
+            "strand",
+            "pred",
+            "three_prime_end",
+            "enzyme_cut_sites",
+            "me_start",
+            "me_end",
+        ]
+    ]
+    for row_data in extracted_vcf_data:
+        name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
+        if strand_me == "null":
+            # TODO - write a better format string
+            print("WARNING - strand is not specified:", row_data)
+        else:
+            result_1 = [
+                row_data["CHROM"],
+                int(row_data["POS"]) - target_width,
+                int(row_data["POS"]),
+                int(row_data["POS"]),
+                int(row_data["POS"]),
+                strand_me,
+                name_me,
+                strand_me == "-",
+                "",
+                int(start_me),
+                int(end_me),
+            ]
+            formated_table.append(result_1)
+            result_2 = [
+                row_data["CHROM"],
+                int(row_data["POS"]),
+                int(row_data["POS"]) + target_width,
+                int(row_data["POS"]),
+                int(row_data["POS"]),
+                strand_me,
+                name_me,
+                strand_me == "+",
+                "",
+                int(start_me),
+                int(end_me),
+            ]
+            formated_table.append(result_2)
+    return formated_table
+
+
+def main(filepath):
+    file_name = filepath.split("/")[-1].split(".")[0]
+    file_handler = load_vcf(filepath)
+    _, header = parse_meta_info(file_handler)
+    insertions = parse_vcf_content(file_handler, header)
+    parsed_table = retrieve_required_data(insertions)
+    with open("output/insertion_tables/{}.tab".format(file_name), 'w') as file:
+        for row in parsed_table:
+            file.write('\t'.join([str(x) for x in list(row)]) + '\n')
+
+
+if __name__ == "__main__":
+    filename = sys.argv[1] if len(sys.argv) > 1 else None
+    if filename:
+        main(filename)
+

@@ -373,6 +373,7 @@ class ReadClassifier:
 
         fa_g_seq = insertion.GENOME_SEQUENCE
         fa_l_seq = insertion.LINE1_SEQUENCE
+        print(fa_l_seq)
         for bn in json_data["bins"]:
             if "g_" in bn:
                 for (i, each) in enumerate(json_data["bins"][bn]["coverage"]):

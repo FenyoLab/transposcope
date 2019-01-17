@@ -1,6 +1,7 @@
 # atomicwrites==1.2.1
 # attrs==18.2.0
 biopython==1.72
+cherrypy==18.1.0
 # filelock==3.0.10
 # more-itertools==4.3.0
 numpy==1.15.2

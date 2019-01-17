@@ -22,7 +22,7 @@ class Insertion:
             self.CHROMOSOME = named_tuple.chromosome
             self.TARGET_START = named_tuple.target_start
             self.TARGET_END = named_tuple.target_end
-            self.ALL_COLUMNS = named_tuple
+            self.ALL_COLUMNS = named_tuple._asdict()
         else:
             self.CLIP_START = clip_start
             self.CLIP_END = clip_end
@@ -49,8 +49,8 @@ class Insertion:
         else:
             #            CS/TS    CE                          TE
             # LINE1 AAAAA  |------|---------------------------|
-            # self.START = min(self.CLIP_START, self.TARGET_START)
-            self.START = min(self.TARGET_START, self.CLIP_START) - 1
+            self.START = self.CLIP_START - 1
+            # self.START = min(self.TARGET_START, self.CLIP_START) - 1
             self.END = self.TARGET_END
             self.INSERTION_SITE = self.CLIP_START
 

@@ -265,7 +265,7 @@ def main(reference_type,
                     insertion.CLIP_START,
                     insertion.CLIP_END - insertion.CLIP_START
                 ),
-                ','.join(gene_info),
+                gene_info,
                 "{:.2f}".format(insertion.PRED)
             ]
         )
@@ -273,6 +273,7 @@ def main(reference_type,
             insertion,
             sorted_bam_path
         )
+        break
     #     TODO - write out bedfile
     #     TODO - write out index file
     #     TODO - delete local realignment files (test this)

@@ -49,8 +49,8 @@ class Insertion:
         else:
             #            CS/TS    CE                          TE
             # LINE1 AAAAA  |------|---------------------------|
-            # self.START = min(self.CLIP_START, self.TARGET_START)
-            self.START = min(self.TARGET_START, self.CLIP_START) - 1
+            self.START = self.CLIP_START - 1
+            # self.START = min(self.TARGET_START, self.CLIP_START) - 1
             self.END = self.TARGET_END
             self.INSERTION_SITE = self.CLIP_START
 

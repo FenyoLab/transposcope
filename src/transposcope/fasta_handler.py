@@ -62,11 +62,9 @@ class FastaHandler:
             self.LINE1_START, self.LINE1_END
         )
         insertion.GENOME_SEQUENCE = reference_genome_sequence
-        insertion.LINE1_SEQUENCE = self.get_line1_nucleotides_in_range(
-            self.LINE1_START, self.LINE1_END
-        )
         if insertion.COMPLEMENT:
             line_1_sequence = self.reverse_complement(line_1_sequence)
+            insertion.LINE1_SEQUENCE = line_1_sequence
             return reference_genome_sequence + line_1_sequence
         else:
             return line_1_sequence + reference_genome_sequence

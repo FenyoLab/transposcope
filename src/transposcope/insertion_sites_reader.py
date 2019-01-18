@@ -7,15 +7,16 @@ class InsertionSiteReader:
         :param insertion_sites_file_path:
         :param header:
         """
-        print("FP", insertion_sites_file_path)
         if header is None:
             header = {
-                "strings": ["chromosome"],
+                "strings": ["chromosome", 'enzyme_cut_sites', 'strand'],
                 "ints": [
                     "target_start",
                     "target_end",
                     "clip_start",
                     "clip_end",
+                    "me_start",
+                    "me_end"
                 ],
                 "floats": ["pred"],
                 "bools": ["three_prime_end"],
@@ -58,6 +59,7 @@ class InsertionSiteReader:
         )
         """
         for line in self.repred_file.readlines():
-            line = self.__parse_line(line)
-            line_with_header = self.insertion_line(**line)
-            yield (line_with_header)
+            if line.strip():
+                line = self.__parse_line(line)
+                line_with_header = self.insertion_line(**line)
+                yield (line_with_header)

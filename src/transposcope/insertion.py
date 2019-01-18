@@ -23,20 +23,8 @@ class Insertion:
             self.TARGET_START = named_tuple.target_start
             self.TARGET_END = named_tuple.target_end
             self.ALL_COLUMNS = named_tuple._asdict()
-        else:
-            self.CLIP_START = clip_start
-            self.CLIP_END = clip_end
-            self.PRED = pred
-            self.CHROMOSOME = chromosome
-            self.TARGET_START = target_start
-            self.TARGET_END = target_end
-            self.ALL_COLUMNS = {
-                "a": self.CLIP_START,
-                "b": self.CLIP_END,
-                "c": self.PRED,
-                "d": self.TARGET_START,
-                "e": self.TARGET_END,
-            }
+            self.LINE1_START = named_tuple.me_start - 1
+            self.LINE1_END = named_tuple.me_end
         self.read_keys_in_target_region = None
         self.calculate_if_insertion_is_complement()
         if self.COMPLEMENT:

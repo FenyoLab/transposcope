@@ -11,7 +11,7 @@
     "label":"positive"
   },
   "reference":{
-    "hg":"/media/mark/Data/transposcope/reference/hg19/",
+    "hg":"/media/mark/Data/transposcope/reference/hg38/",
     "refFlat":"/media/mark/Data/transposcope/reference/refFlat.txt"
   },
   "output":{

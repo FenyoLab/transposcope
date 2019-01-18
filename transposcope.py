@@ -2,6 +2,7 @@ import json
 import logging.config
 import os
 import shutil
+import sys
 
 from src.transposcope.bam_handler import BamHandler
 from src.transposcope.constants import LABEL
@@ -205,11 +206,19 @@ def main(reference_type,
         )
         reads_dictionary += reads_in_region
         temp_insertion.read_keys_in_target_region = reads_in_region.keys()
+        print(temp_insertion)
         insertions.append(temp_insertion)
     logging.info('finding pairs')
     for read in bam_handler.all_reads():
         if read.query_name in reads_dictionary:
             reads_dictionary.insert(read)
+            counter = 0
+            for qn, arr in reads_dictionary.items():
+                if len(arr) == 2:
+                    counter += 1
+            if counter == len(reads_dictionary):
+                break
+
     logging.info("Processing insertions")
     file_writer = FileWriter()
     realigner = Realigner(
@@ -217,8 +226,7 @@ def main(reference_type,
         config['bowtie']['fastaIndexed'],
         config['bowtie']['realign']
     )
-    classifier = ReadClassifier(int(config['line1']['start']),
-                                int(config['line1']['end']), transposcope_path)
+    classifier = ReadClassifier(transposcope_path)
     gene_handler = GeneHandler(config['reference']['refFlat'])
     insertions.sort(key=lambda x: x.CHROMOSOME)
     heading_table = {
@@ -294,9 +302,14 @@ def main(reference_type,
 
 
 if __name__ in '__main__':
+    # main('fp',
+    #      'test_anatomy',
+    #      'test_type', 'test_patient_name', 'test_patient_id',
+    #      'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
+    #      'A-Normal_GTCGTAGA_L003001.tab')
     main('fp',
          'test_anatomy',
-         'test_type', 'test_patient_name', 'test_patient_id',
-         'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
-         'A-Normal_GTCGTAGA_L003001.tab')
+         'test_melt', 'test_patient_name', 'test_patient_id',
+         'NA19240.bam',
+         'NA19240.tab')
     # reference_type, anatomy, sample_type, patient_id

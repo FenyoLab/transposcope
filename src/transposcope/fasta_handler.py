@@ -48,6 +48,7 @@ class FastaHandler:
 
     def get_line1_nucleotides_in_range(self, start=None, end=None):
         if start is None and end is None:
+            logging.error('The insertion should define the element start/end')
             start = self.LINE1_START
             end = self.LINE1_END
         if start < 0 or end < 0:
@@ -59,7 +60,7 @@ class FastaHandler:
             insertion.START, insertion.END, insertion.CHROMOSOME
         )
         line_1_sequence = self.get_line1_nucleotides_in_range(
-            self.LINE1_START, self.LINE1_END
+            insertion.LINE1_START, insertion.LINE1_END
         )
         insertion.GENOME_SEQUENCE = reference_genome_sequence
         if insertion.COMPLEMENT:
@@ -67,6 +68,7 @@ class FastaHandler:
             insertion.LINE1_SEQUENCE = line_1_sequence
             return reference_genome_sequence + line_1_sequence
         else:
+            insertion.LINE1_SEQUENCE = line_1_sequence
             return line_1_sequence + reference_genome_sequence
 
     @staticmethod

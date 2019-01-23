@@ -80,7 +80,8 @@ class ReadClassifier:
         min_g = insertion.TARGET_START
         max_g = insertion.TARGET_END
         complement = 0
-        if insertion.COMPLEMENT:
+        if (insertion.THREE_PRIME and insertion.ME_IS_COMPLEMENT) or (
+                not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT):
             complement = 1
             zero = insertion.CLIP_START
             zero_ = insertion.CLIP_END
@@ -373,7 +374,6 @@ class ReadClassifier:
                                     "cig": col_string[1],
                                 }
                             )
-        print(insertion)
         fa_g_seq = insertion.GENOME_SEQUENCE
         fa_l_seq = insertion.LINE1_SEQUENCE
         for bn in json_data["bins"]:
@@ -433,6 +433,11 @@ class ReadClassifier:
 
         clip_id = insertion.CLIP_START
         clip_flank = insertion.CLIP_END - insertion.CLIP_START
+
+        if insertion.THREE_PRIME:
+            end = '3'
+        else:
+            end = '5'
         # TODO - change to use a format string
         with open(
             os.path.join(
@@ -441,7 +446,7 @@ class ReadClassifier:
                 + "-"
                 + str(clip_id)
                 + "("
-                + str(clip_flank)
+                + end
                 + ").json.gz.txt",
             ),
             "wb+",
@@ -647,9 +652,9 @@ class ReadClassifier:
                     for i in range(len(blocks) - 1):
                         for j in range(blocks[i][1], blocks[i + 1][0] + 1):
                             if j < mins[0]:
-                                json_data["bins"][bins[1]]["coverage"][59][
-                                    "X"
-                                ] += 1
+                                json_data["bins"][bins[1]]["coverage"][
+                                    j - mins[1]
+                                    ]["X"] += 1
                     for i in range(b_start, b_end):
                         json_data["bins"][bins[1]]["coverage"][i - mins[1]][
                             s_query[i - qs_start]

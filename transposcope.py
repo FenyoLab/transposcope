@@ -20,6 +20,7 @@ from src.transposcope.realigner import Realigner
 
 
 def get_config_from_file():
+    # with open('./config/config_tipseq.json') as json_data_file:
     with open('./config/config.json') as json_data_file:
         data = json.load(json_data_file)
     return data
@@ -195,7 +196,10 @@ def main(reference_type,
         config['line1']['end']
     )
     insertions = []
-    reads_dictionary = ReadsDict()
+
+    reads_dictionary = {True: ReadsDict(),
+                        False: ReadsDict()
+                        }
     logging.info('finding target regions')
     for insertion_stats in insertion_sites_reader.read_lines():
         temp_insertion = Insertion(
@@ -204,20 +208,18 @@ def main(reference_type,
         reads_in_region = bam_handler.fetch_reads_in_region(
             temp_insertion
         )
-        reads_dictionary += reads_in_region
+        reads_dictionary[
+            temp_insertion.THREE_PRIME
+        ] += reads_in_region
         temp_insertion.read_keys_in_target_region = reads_in_region.keys()
-        print(temp_insertion)
         insertions.append(temp_insertion)
     logging.info('finding pairs')
     for read in bam_handler.all_reads():
-        if read.query_name in reads_dictionary:
-            reads_dictionary.insert(read)
-            counter = 0
-            for qn, arr in reads_dictionary.items():
-                if len(arr) == 2:
-                    counter += 1
-            if counter == len(reads_dictionary):
-                break
+        if read.query_name in reads_dictionary[True]:
+            reads_dictionary[True].insert(read)
+
+        if read.query_name in reads_dictionary[False]:
+            reads_dictionary[False].insert(read)
 
     logging.info("Processing insertions")
     file_writer = FileWriter()
@@ -248,7 +250,7 @@ def main(reference_type,
 
         fastq1_path, fastq2_path = file_writer.write_fastq(
             reference_path,
-            reads_dictionary,
+            reads_dictionary[insertion.THREE_PRIME],
             file_name,
             insertion.read_keys_in_target_region
         )
@@ -266,12 +268,16 @@ def main(reference_type,
         )
 
         # heading_table['Data']\
+        if insertion.THREE_PRIME:
+            end = '3'
+        else:
+            end = '5'
         heading_table['data'].append(
             [
                 '{}-{}({})'.format(
                     insertion.CHROMOSOME,
                     insertion.CLIP_START,
-                    insertion.CLIP_END - insertion.CLIP_START
+                    end
                 ),
                 gene_info,
                 "{:.2f}".format(insertion.PRED)
@@ -281,7 +287,6 @@ def main(reference_type,
             insertion,
             sorted_bam_path
         )
-        break
     #     TODO - write out bedfile
     #     TODO - write out index file
     #     TODO - delete local realignment files (test this)

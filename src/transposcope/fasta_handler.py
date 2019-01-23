@@ -6,11 +6,11 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 class FastaHandler:
     def __init__(
-        self,
-        line1_reference_path,
-        reference_genome_folder_path,
-        line1_start,
-        line1_end,
+            self,
+            line1_reference_path,
+            reference_genome_folder_path,
+            line1_start,
+            line1_end,
     ):
         self.LINE1_START = int(line1_start)
         self.LINE1_END = int(line1_end)
@@ -37,7 +37,7 @@ class FastaHandler:
             self._reference_genome_seq = next(parser)[1].upper()
 
     def get_reference_nucleotides_in_range(
-        self, start=None, end=None, chromosome=None
+            self, start=None, end=None, chromosome=None
     ):
         if start < 0 or end < 0:
             raise ValueError("start and end positions must be positive")
@@ -51,8 +51,10 @@ class FastaHandler:
             logging.error('The insertion should define the element start/end')
             start = self.LINE1_START
             end = self.LINE1_END
-        if start < 0 or end < 0:
-            raise ValueError("start and end positions must be positive")
+        if end < 0:
+            raise ValueError("end positions must be positive")
+        if start < 0:
+            start = 0
         return self._LINE1_REFERENCE_SEQ[start:end]
 
     def generate_fasta_sequence(self, insertion):
@@ -63,12 +65,16 @@ class FastaHandler:
             insertion.LINE1_START, insertion.LINE1_END
         )
         insertion.GENOME_SEQUENCE = reference_genome_sequence
-        if insertion.COMPLEMENT:
+        if insertion.ME_IS_COMPLEMENT:
             line_1_sequence = self.reverse_complement(line_1_sequence)
-            insertion.LINE1_SEQUENCE = line_1_sequence
+
+        insertion.LINE1_SEQUENCE = line_1_sequence
+
+        if (insertion.THREE_PRIME and insertion.ME_IS_COMPLEMENT) or (
+                not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT):
             return reference_genome_sequence + line_1_sequence
+
         else:
-            insertion.LINE1_SEQUENCE = line_1_sequence
             return line_1_sequence + reference_genome_sequence
 
     @staticmethod

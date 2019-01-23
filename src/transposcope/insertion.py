@@ -12,7 +12,7 @@ class Insertion:
         named_tuple=None,
     ):
         # TODO - Make sure that these variables are needed
-        self.COMPLEMENT = False
+        self.ME_IS_COMPLEMENT = False
         self.GENOME_SEQUENCE = None
         self.LINE1_SEQUENCE = None
         if named_tuple:
@@ -22,12 +22,16 @@ class Insertion:
             self.CHROMOSOME = named_tuple.chromosome
             self.TARGET_START = named_tuple.target_start
             self.TARGET_END = named_tuple.target_end
+            self.STRAND = named_tuple.strand
             self.ALL_COLUMNS = named_tuple._asdict()
             self.LINE1_START = named_tuple.me_start - 1
             self.LINE1_END = named_tuple.me_end
+            self.THREE_PRIME = named_tuple.three_prime_end
         self.read_keys_in_target_region = None
-        self.calculate_if_insertion_is_complement()
-        if self.COMPLEMENT:
+        # self.calculate_if_insertion_is_complement()
+        self.ME_IS_COMPLEMENT = True if self.STRAND == '-' else False
+        if (self.THREE_PRIME and self.ME_IS_COMPLEMENT) or (
+                not self.THREE_PRIME and not self.ME_IS_COMPLEMENT):
             # TS                             CS    CE/TE
             # |------------------------------|------|TTTTT LINE1
             self.START = self.TARGET_START - 1
@@ -46,7 +50,7 @@ class Insertion:
         if (self.CLIP_START + self.CLIP_END) / 2 > (
             self.TARGET_START + self.TARGET_END
         ) / 2:
-            self.COMPLEMENT = True
+            self.ME_IS_COMPLEMENT = True
 
     def set_reads_found_in_target_region(self, reads):
         self.reads_in_target_region = reads

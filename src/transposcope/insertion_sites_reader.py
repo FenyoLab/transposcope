@@ -9,24 +9,30 @@ class InsertionSiteReader:
         """
         if header is None:
             header = {
-                "strings": ["chromosome", 'enzyme_cut_sites', 'strand'],
+                "strings": ["chromosome", "enzyme_cut_sites", "strand"],
                 "ints": [
                     "target_start",
                     "target_end",
                     "clip_start",
                     "clip_end",
                     "me_start",
-                    "me_end"
+                    "me_end",
                 ],
                 "floats": ["pred"],
                 "bools": ["three_prime_end"],
             }
         try:
-            self.repred_file = open(insertion_sites_file_path, "r")
+            self.insertion_sites_file = open(insertion_sites_file_path, "r")
         except IOError:
-            print("repred file path invalid")
+            print(
+                "insertion sites file path invalid: {}".format(
+                    insertion_sites_file_path
+                )
+            )
         self.header = header
-        self.all_headers = self.repred_file.readline().strip().split("\t")
+        self.all_headers = (
+            self.insertion_sites_file.readline().strip().split("\t")
+        )
         self.insertion_line = namedtuple("insertion_line", self.all_headers)
 
     def __parse_line(self, line):
@@ -58,7 +64,7 @@ class InsertionSiteReader:
             H31_pred
         )
         """
-        for line in self.repred_file.readlines():
+        for line in self.insertion_sites_file.readlines():
             if line.strip():
                 line = self.__parse_line(line)
                 line_with_header = self.insertion_line(**line)

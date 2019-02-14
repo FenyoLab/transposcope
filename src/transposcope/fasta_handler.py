@@ -6,11 +6,11 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 class FastaHandler:
     def __init__(
-            self,
-            line1_reference_path,
-            reference_genome_folder_path,
-            line1_start,
-            line1_end,
+        self,
+        line1_reference_path,
+        reference_genome_folder_path,
+        line1_start,
+        line1_end,
     ):
         self.LINE1_START = int(line1_start)
         self.LINE1_END = int(line1_end)
@@ -37,7 +37,7 @@ class FastaHandler:
             self._reference_genome_seq = next(parser)[1].upper()
 
     def get_reference_nucleotides_in_range(
-            self, start=None, end=None, chromosome=None
+        self, start=None, end=None, chromosome=None
     ):
         if start < 0 or end < 0:
             raise ValueError("start and end positions must be positive")
@@ -48,7 +48,7 @@ class FastaHandler:
 
     def get_line1_nucleotides_in_range(self, start=None, end=None):
         if start is None and end is None:
-            logging.error('The insertion should define the element start/end')
+            logging.error("The insertion should define the element start/end")
             start = self.LINE1_START
             end = self.LINE1_END
         if end < 0:
@@ -71,7 +71,8 @@ class FastaHandler:
         insertion.LINE1_SEQUENCE = line_1_sequence
 
         if (insertion.THREE_PRIME and insertion.ME_IS_COMPLEMENT) or (
-                not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT):
+            not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT
+        ):
             return reference_genome_sequence + line_1_sequence
 
         else:

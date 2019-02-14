@@ -6,9 +6,11 @@ class Insertion:
         target_end=None,
         clip_start=None,
         clip_end=None,
+        strand=None,
         pred=None,
-        clip_sc=None,
-        line1_end=None,
+        me_start=None,
+        me_end=None,
+        three_prime_end=None,
         named_tuple=None,
     ):
         # TODO - Make sure that these variables are needed
@@ -27,21 +29,37 @@ class Insertion:
             self.LINE1_START = named_tuple.me_start - 1
             self.LINE1_END = named_tuple.me_end
             self.THREE_PRIME = named_tuple.three_prime_end
+        else:
+            self.CLIP_START = clip_start
+            self.CLIP_END = clip_end
+            self.PRED = pred
+            self.CHROMOSOME = chromosome
+            self.TARGET_START = target_start
+            self.TARGET_END = target_end
+            self.STRAND = strand
+            self.LINE1_START = me_start - 1
+            self.LINE1_END = me_end
+            self.THREE_PRIME = three_prime_end
+
         self.read_keys_in_target_region = None
         # self.calculate_if_insertion_is_complement()
-        self.ME_IS_COMPLEMENT = True if self.STRAND == '-' else False
+        self.ME_IS_COMPLEMENT = True if self.STRAND == "-" else False
         if (self.THREE_PRIME and self.ME_IS_COMPLEMENT) or (
-                not self.THREE_PRIME and not self.ME_IS_COMPLEMENT):
-            # TS                             CS    CE/TE
+            not self.THREE_PRIME and not self.ME_IS_COMPLEMENT
+        ):
+            # TS                             CS    CE
             # |------------------------------|------|TTTTT LINE1
+
             self.START = self.TARGET_START - 1
             # self.END = max(self.CLIP_END, self.TARGET_END)
-            self.END = self.CLIP_END - 1
+            self.END = self.CLIP_END
             self.INSERTION_SITE = self.CLIP_END
         else:
-            #            CS/TS    CE                          TE
+            #            CS      CE                          TE
             # LINE1 AAAAA  |------|---------------------------|
+
             self.START = self.CLIP_START - 1
+
             # self.START = min(self.TARGET_START, self.CLIP_START) - 1
             self.END = self.TARGET_END
             self.INSERTION_SITE = self.CLIP_START

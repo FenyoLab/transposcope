@@ -1,6 +1,3 @@
-import logging
-
-
 class ReadsDict(dict):
     def __iadd__(self, other):
         self.update(other)
@@ -16,7 +13,6 @@ class ReadsDict(dict):
         # This should be logged
         if v.flag & (0x800 | 0x100):
             # TODO: Add documentation indicating that these reads are discarded
-            # logging.info('Non primary or secondary alignment discarded {}'.format(v.query_name))
             return False
         else:
             found_read = self[v.query_name]
@@ -28,7 +24,9 @@ class ReadsDict(dict):
                     "with the same query name: ({})".format(v.query_name)
                 )
             elif len(found_read) == 0:
-                raise ValueError("There should not be empty lists at this point")
+                raise ValueError(
+                    "There should not be empty lists at this point"
+                )
             else:
                 if (
                     found_read[0].is_read2

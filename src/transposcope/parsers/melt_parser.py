@@ -7,7 +7,6 @@ Description: Parser which extracts relavant data from MELT vcf files and
              outputs a tab delimited file usable by TranspoScope.
 """
 
-import os
 import re
 import sys
 
@@ -188,13 +187,12 @@ def main(filepath):
     _, header = parse_meta_info(file_handler)
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
-    with open("output/insertion_tables/{}.tab".format(file_name), 'w') as file:
+    with open("output/insertion_tables/{}.tab".format(file_name), "w") as file:
         for row in parsed_table:
-            file.write('\t'.join([str(x) for x in list(row)]) + '\n')
+            file.write("\t".join([str(x) for x in list(row)]) + "\n")
 
 
 if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else None
     if filename:
         main(filename)
-

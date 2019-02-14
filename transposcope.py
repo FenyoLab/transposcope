@@ -20,7 +20,7 @@ from src.transposcope.realigner import Realigner
 
 
 def get_config_from_file():
-    # with open('./config/config_tipseq.json') as json_data_file:
+    # with open('./config/config_hg19.json') as json_data_file:
     with open('./config/config.json') as json_data_file:
         data = json.load(json_data_file)
     return data
@@ -180,6 +180,7 @@ def main(reference_type,
         insertion_list
     )
     logging.info(bam_path)
+    print('ilp', insertion_list_path)
     insertion_sites_reader = InsertionSiteReader(
         insertion_list_path
     )
@@ -311,7 +312,7 @@ if __name__ in '__main__':
     #      'test_anatomy',
     #      'test_type', 'test_patient_name', 'test_patient_id',
     #      'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
-    #      'A-Normal_GTCGTAGA_L003001.tab')
+    #      'A-Normal_GTCGTAGA_L003001_all.tab')
     main('fp',
          'test_anatomy',
          'test_melt', 'test_patient_name', 'test_patient_id',

@@ -1,9 +1,6 @@
 {
   "line1":{
     "fasta":"/media/mark/Data/transposcope/reference/Homo_sapiens_L1.L1HS.fa",
-    "start":"5064",
-    "end":"6064",
-    "db":"write-math"
   },
   "input":{
     "bam":"/media/mark/Data/transposcope/bams/",

@@ -152,30 +152,30 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
         else:
             result_1 = [
                 row_data["CHROM"],
-                int(row_data["POS"]) - target_width,
-                int(row_data["POS"]),
-                int(row_data["POS"]),
-                int(row_data["POS"]),
+                int(row_data["POS"]) + 1 - target_width,
+                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) + 1,
                 strand_me,
                 1.0,
                 strand_me == "-",
                 "",
-                int(start_me),
-                int(end_me),
+                int(start_me) - 1,
+                int(end_me) + 1,
             ]
             formated_table.append(result_1)
             result_2 = [
                 row_data["CHROM"],
-                int(row_data["POS"]),
-                int(row_data["POS"]) + target_width,
-                int(row_data["POS"]),
-                int(row_data["POS"]),
+                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) + 1 + target_width,
+                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) + 1,
                 strand_me,
                 1.0,
                 strand_me == "+",
                 "",
-                int(start_me),
-                int(end_me),
+                int(start_me) - 1,
+                int(end_me) + 1,
             ]
             formated_table.append(result_2)
     return formated_table

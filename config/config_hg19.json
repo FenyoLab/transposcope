@@ -1,6 +1,9 @@
 {
   "line1":{
-    "fasta":"/media/mark/Data/transposcope/reference/Homo_sapiens_L1.L1HS.fa"
+    "fasta":"/media/mark/Data/transposcope/reference/Homo_sapiens_L1.L1HS.fa",
+    "start":"5064",
+    "end":"6064",
+    "db":"write-math"
   },
   "input":{
     "bam":"/media/mark/Data/transposcope/bams/",
@@ -8,7 +11,7 @@
     "label":"positive"
   },
   "reference":{
-    "hg":"/media/mark/Data/transposcope/reference/hg38/",
+    "hg":"/media/mark/Data/transposcope/reference/hg19/",
     "refFlat":"/media/mark/Data/transposcope/reference/refFlat.txt"
   },
   "output":{

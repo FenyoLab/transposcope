@@ -8,12 +8,10 @@ class FastaHandler:
     def __init__(
         self,
         line1_reference_path,
-        reference_genome_folder_path,
-        line1_start,
-        line1_end,
+        reference_genome_folder_path
     ):
-        self.LINE1_START = int(line1_start)
-        self.LINE1_END = int(line1_end)
+        # self.LINE1_START = int(line1_start)
+        # self.LINE1_END = int(line1_end)
         self._reference_genome_seq = None
         self._reference_genome_folder_path = reference_genome_folder_path
         self._current_chromosome = None
@@ -49,8 +47,6 @@ class FastaHandler:
     def get_line1_nucleotides_in_range(self, start=None, end=None):
         if start is None and end is None:
             logging.error("The insertion should define the element start/end")
-            start = self.LINE1_START
-            end = self.LINE1_END
         if end < 0:
             raise ValueError("end positions must be positive")
         if start < 0:

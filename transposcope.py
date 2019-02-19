@@ -192,9 +192,7 @@ def main(reference_type,
         ),
         os.path.expanduser(
             config['reference']['hg']
-        ),
-        config['line1']['start'],
-        config['line1']['end']
+        )
     )
     insertions = []
 
@@ -317,5 +315,5 @@ if __name__ in '__main__':
          'test_anatomy',
          'test_melt', 'test_patient_name', 'test_patient_id',
          'NA19240.bam',
-         'NA19240.tab')
+         'LINE1.tab')
     # reference_type, anatomy, sample_type, patient_id

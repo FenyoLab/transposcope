@@ -22,9 +22,7 @@ class GeneHandler:
             gene_reference_path, sep="\t", low_memory=False, names=header
         ).fillna("N/A")
 
-    def find_nearest_gene(
-        self, chromosome: str, insertion_site: int
-    ) -> (str, str):
+    def find_nearest_gene(self, chromosome, insertion_site):
         found = False
         gene = ""
         color_grad = [

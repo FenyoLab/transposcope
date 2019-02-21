@@ -73,12 +73,12 @@ class Insertion:
     def set_reads_found_in_target_region(self, reads):
         self.reads_in_target_region = reads
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "{}:{}-{}".format(
             self.CHROMOSOME, self.TARGET_START, self.TARGET_END
         )
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return (
             self.CHROMOSOME
             + ":"

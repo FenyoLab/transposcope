@@ -8,7 +8,8 @@ Read = namedtuple(
     [
         'query_name',
         'is_read1',
-        'is_read2'
+        'is_read2',
+        'flag'
     ]
 )
 
@@ -49,20 +50,20 @@ class TestReadsDict(TestCase):
         reads_dict = ReadsDict(
             {
                 'a': [
-                    Read('a', False, True)
+                    Read('a', False, True, 0)
                 ]
             }
         )
         result = reads_dict.insert(
-            Read('a', True, False)
+            Read('a', True, False, 0)
         )
         self.assertIs(result, 0)
         self.assertTrue(reads_dict['a'][0].is_read1)
         self.assertTrue(reads_dict['a'][1].is_read2)
 
     def test_insert_read1_with_read2_present(self):
-        reads_dict = ReadsDict({'a': [Read('a', True, False)]})
-        result = reads_dict.insert(Read('a', False, True))
+        reads_dict = ReadsDict({'a': [Read('a', True, False, 0)]})
+        result = reads_dict.insert(Read('a', False, True, 0))
         self.assertIs(result, 0)
         self.assertTrue(reads_dict['a'][0].is_read1)
         self.assertTrue(reads_dict['a'][1].is_read2)
@@ -71,24 +72,24 @@ class TestReadsDict(TestCase):
         reads_dict = ReadsDict(
             {
                 'a': [
-                    Read('a', False, True),
-                    Read('a', True, False)
+                    Read('a', False, True, 0),
+                    Read('a', True, False, 0)
                 ]
             }
         )
-        result = reads_dict.insert(Read('a', True, False))
+        result = reads_dict.insert(Read('a', True, False, 0))
         self.assertIs(result, -1)
 
     def test_insert_read2_with_both_reads_present(self):
         reads_dict = ReadsDict(
             {
                 'a': [
-                    Read('a', False, True),
-                    Read('a', True, False)
+                    Read('a', False, True, 0),
+                    Read('a', True, False, 0)
                 ]
             }
         )
-        result = reads_dict.insert(Read('a', False, True))
+        result = reads_dict.insert(Read('a', False, True, 0))
         self.assertIs(result, -1)
 
     def test_insert_read1_with_empty_list(self):
@@ -96,5 +97,5 @@ class TestReadsDict(TestCase):
         self.assertRaises(
             ValueError,
             reads_dict.insert,
-            Read('a', True, False)
+            Read('a', True, False, 0)
         )

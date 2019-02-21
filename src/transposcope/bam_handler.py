@@ -25,7 +25,8 @@ class BamHandler:
             start=insertion.START,
             end=insertion.END,
         ):
-            reads[read.query_name].insert(read.is_read2, read)
+            if not read.flag & (0x800 | 0x100):
+                reads[read.query_name].insert(read.is_read2, read)
         return dict(reads)
 
     def all_reads(self):

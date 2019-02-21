@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pandas as pd
@@ -118,7 +119,11 @@ def main(filepath, only_gold_standard=False):
     df = load_repred(filepath)
     if validate_repred(df):
         print("Repred is valid")
+    if not os.path.exists("output/insertion_tables"):
+        os.mkdir("output/insertion_tables")
+
     df = convert_dataframe(df)
+
     df.to_csv(
         "output/insertion_tables/{}.tab".format(file_name),
         sep="\t",
@@ -128,5 +133,7 @@ def main(filepath, only_gold_standard=False):
 
 if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else None
+
+    print(filename)
     if filename:
         main(filename)

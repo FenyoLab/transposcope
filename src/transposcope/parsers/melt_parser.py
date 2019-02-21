@@ -7,7 +7,6 @@ Description: Parser which extracts relavant data from MELT vcf files and
              outputs a tab delimited file usable by TranspoScope.
 """
 
-import os
 import re
 import sys
 
@@ -147,6 +146,7 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
     ]
     for row_data in extracted_vcf_data:
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
+        assess = row_data['INFO']['ASSESS']
         if strand_me == "null":
             # TODO - write a better format string
             print("WARNING - strand is not specified:", row_data)
@@ -158,25 +158,25 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                 int(row_data["POS"]),
                 int(row_data["POS"]),
                 strand_me,
-                name_me,
+                assess,
                 strand_me == "-",
                 "",
-                int(start_me),
-                int(end_me),
+                int(start_me) - 1,
+                int(end_me) + 1,
             ]
             formated_table.append(result_1)
             result_2 = [
                 row_data["CHROM"],
-                int(row_data["POS"]),
-                int(row_data["POS"]) + target_width,
-                int(row_data["POS"]),
-                int(row_data["POS"]),
+                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) + 1 + target_width,
+                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) + 1,
                 strand_me,
-                name_me,
-                strand_me == "+",
+                assess,
+                strand_me != "-",
                 "",
-                int(start_me),
-                int(end_me),
+                int(start_me) - 1,
+                int(end_me) + 1,
             ]
             formated_table.append(result_2)
     return formated_table
@@ -188,13 +188,12 @@ def main(filepath):
     _, header = parse_meta_info(file_handler)
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
-    with open("output/insertion_tables/{}.tab".format(file_name), 'w') as file:
+    with open("output/insertion_tables/{}.tab".format(file_name), "w") as file:
         for row in parsed_table:
-            file.write('\t'.join([str(x) for x in list(row)]) + '\n')
+            file.write("\t".join([str(x) for x in list(row)]) + "\n")
 
 
 if __name__ == "__main__":
     filename = sys.argv[1] if len(sys.argv) > 1 else None
     if filename:
         main(filename)
-

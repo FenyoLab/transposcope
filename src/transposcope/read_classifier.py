@@ -20,7 +20,6 @@ import pysam
 
 
 class ReadClassifier:
-
     """Docstring for ReadClassifier. """
 
     # TODO: Write docstring
@@ -44,9 +43,7 @@ class ReadClassifier:
         ["g_rj", "l_rj"],
     ]
 
-    def __init__(self, l1_start, l1_end, output_dir):
-        self.L1_REF_SEQ_START = l1_start
-        self.L1_REF_SEQ_END = l1_end
+    def __init__(self, output_dir):
         self._wd = output_dir
         self._heading = [
             "chr#",
@@ -75,13 +72,16 @@ class ReadClassifier:
 
     # TODO - REFACTOR THIS METHOD
     def classify_insertion(self, insertion, bamfile):
-        min_l1 = self.L1_REF_SEQ_START
-        max_l1 = self.L1_REF_SEQ_END
-        min_g = insertion.TARGET_START
-        max_g = insertion.TARGET_END
-        # print(min_g, max_g)
+        # min_l1 = self.L1_REF_SEQ_START
+        # max_l1 = self.L1_REF_SEQ_END
+        min_l1 = insertion.LINE1_START
+        max_l1 = insertion.LINE1_END
+        min_g = insertion.START
+        max_g = insertion.END
         complement = 0
-        if insertion.COMPLEMENT:
+        if (insertion.THREE_PRIME and insertion.ME_IS_COMPLEMENT) or (
+                not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT
+        ):
             complement = 1
             zero = insertion.CLIP_START
             zero_ = insertion.CLIP_END
@@ -91,8 +91,8 @@ class ReadClassifier:
         else:
             zero = insertion.CLIP_END
             zero_ = insertion.CLIP_START
-            j_start = 1000
-            j_end = 1000 + (zero - zero_) - 1
+            j_start = insertion.LINE1_END - insertion.LINE1_START
+            j_end = j_start + (zero - zero_) - 1
             min_g = zero_
         json_data = {"info": insertion.ALL_COLUMNS, "bins": {}}
 
@@ -194,7 +194,7 @@ class ReadClassifier:
                     "c": "-",
                     "s": "-",
                 }
-                for i in range(-(max_l1 - min_l1 + 1), 0)
+                for i in range(-(max_l1 - min_l1), 0)
             ]
             g_letter_offset = 0
             l_letter_offset = 0
@@ -215,7 +215,6 @@ class ReadClassifier:
             "length": max_l1 - min_l1 + 1,
             "coverage": copy.deepcopy(l_zero),
         }
-        # print("g length :", len(g_zero))
         for bn in self.READ_BINS:
             if bn[0] != "":
                 json_data["bins"][bn[0]] = copy.deepcopy(temp_g)
@@ -238,19 +237,23 @@ class ReadClassifier:
         json_data["stats"]["sequence_l"] = letter_l
         if complement:
             json_data["stats"]["ClipS"] = insertion.CLIP_START - max_g
-            json_data["stats"]["ClipE"] = insertion.CLIP_END - max_g - 1
+            json_data["stats"]["ClipE"] = insertion.CLIP_END - max_g
             (json_data["stats"]["ClipWidth"]) = (
-                insertion.CLIP_END - insertion.CLIP_START - 1
+                    insertion.CLIP_END - insertion.CLIP_START
             )
             json_data["stats"]["start"] = min_g - max_g - 1
-            json_data["stats"]["end"] = 160 + l_offset
+            json_data["stats"]["end"] = (
+                                                insertion.LINE1_END - insertion.LINE1_START - 1
+                                        ) + l_offset
         else:
             json_data["stats"]["ClipS"] = zero_ - min_g
-            json_data["stats"]["ClipE"] = zero - min_g - 1
-            (json_data["stats"]["ClipWidth"]) = (
-                json_data["stats"]["ClipE"] - json_data["stats"]["ClipS"]
+            json_data["stats"]["ClipE"] = zero - min_g
+            json_data["stats"]["ClipWidth"] = (
+                    json_data["stats"]["ClipE"] - json_data["stats"]["ClipS"]
             )
-            json_data["stats"]["start"] = -161 + l_offset - 1
+            json_data["stats"]["start"] = (
+                    -(insertion.LINE1_END - insertion.LINE1_START) + l_offset - 1
+            )
             json_data["stats"]["end"] = max_g - min_g + 1
         read_type_counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         mins = [min_g, min_l1]
@@ -269,24 +272,24 @@ class ReadClassifier:
             j_boolean_which_reads = [False, False, False, False]
 
             queries = ["", "", "", ""]
-            junction_queries = ["", "", "", ""]
+            junction_queries = [None, None, None, None]
 
             if v[0].is_unmapped:
                 boolean_which_reads[0] = boolean_which_reads[1] = False
             elif (v[0].reference_start + 1 >= j_end and not complement) or (
-                v[0].reference_end <= j_start and complement
+                    v[0].reference_end <= j_start and complement
             ):
                 boolean_which_reads[0] = True
                 queries[0] = v[0]
             elif (v[0].reference_end <= j_start and not complement) or (
-                v[0].reference_start + 1 >= j_end and complement
+                    v[0].reference_start + 1 >= j_end and complement
             ):
                 boolean_which_reads[1] = True
                 queries[1] = v[0]
             # TODO - change this expression to a function
             elif (
-                v[0].reference_start + 1 < j_end
-                and v[0].reference_end > j_start
+                    v[0].reference_start + 1 < j_end
+                    and v[0].reference_end > j_start
             ):
                 boolean_which_reads[0] = boolean_which_reads[1] = True
                 queries[0] = queries[1] = v[0]
@@ -296,18 +299,18 @@ class ReadClassifier:
             if v[1].is_unmapped:
                 boolean_which_reads[2] = boolean_which_reads[3] = False
             elif (v[1].reference_start + 1 >= j_end and not complement) or (
-                v[1].reference_end <= j_start and complement
+                    v[1].reference_end <= j_start and complement
             ):
                 boolean_which_reads[2] = True
                 queries[2] = v[1]
             elif (v[1].reference_end <= j_start and not complement) or (
-                v[1].reference_start + 1 >= j_end and complement
+                    v[1].reference_start + 1 >= j_end and complement
             ):
                 boolean_which_reads[3] = True
                 queries[3] = v[1]
             elif (
-                v[1].reference_start + 1 < j_end
-                and v[1].reference_end > j_start
+                    v[1].reference_start + 1 < j_end
+                    and v[1].reference_end > j_start
             ):
                 boolean_which_reads[2] = boolean_which_reads[3] = True
                 queries[2] = queries[3] = v[1]
@@ -315,14 +318,13 @@ class ReadClassifier:
                 j_boolean_which_reads[2] = j_boolean_which_reads[3] = True
 
             read_type = (
-                (int(boolean_which_reads[0]) << 0)
-                + (int(boolean_which_reads[1]) << 1)
-                + (int(boolean_which_reads[2]) << 2)
-                + (int(boolean_which_reads[3]) << 3)
+                    (int(boolean_which_reads[0]) << 0)
+                    + (int(boolean_which_reads[1]) << 1)
+                    + (int(boolean_which_reads[2]) << 2)
+                    + (int(boolean_which_reads[3]) << 3)
             )
 
             read_type_counts[read_type] += 1
-            # print(mins)
             self.increment(
                 read_type,
                 boolean_which_reads,
@@ -330,6 +332,9 @@ class ReadClassifier:
                 mins,
                 queries,
                 complement,
+                len(l_zero),
+                insertion.LINE1_START,
+                insertion.LINE1_END,
             )
 
             if read_type in [3, 7, 11, 12, 13, 14, 15]:
@@ -340,9 +345,12 @@ class ReadClassifier:
                     mins,
                     junction_queries,
                     complement,
+                    len(l_zero),
+                    insertion.LINE1_START,
+                    insertion.LINE1_END,
                 )
                 for v_read in [junction_queries[0], junction_queries[2]]:
-                    if v_read is not "":
+                    if v_read is not None:
                         col_string = self.colorize_g(
                             v_read.seq, v_read.cigartuples, 0
                         )
@@ -354,7 +362,7 @@ class ReadClassifier:
                                     "x": (
                                         json_data["bins"]["g_rj"]["coverage"][
                                             v_read.reference_start - 1
-                                        ]["x"]
+                                            ]["x"]
                                     ),
                                     "X": v_read.reference_start,
                                     "seq": v_read.seq,
@@ -364,16 +372,18 @@ class ReadClassifier:
                         else:
                             json_data["bins"]["g_rj"]["reads"].append(
                                 {
-                                    "x": v_read.reference_start - 1000,
+                                    "x": v_read.reference_start
+                                         - (
+                                                 insertion.LINE1_END
+                                                 - insertion.LINE1_START
+                                         ),
                                     "X": v_read.reference_start,
                                     "seq": v_read.seq,
                                     "cig": col_string[1],
                                 }
                             )
-
         fa_g_seq = insertion.GENOME_SEQUENCE
         fa_l_seq = insertion.LINE1_SEQUENCE
-        print(fa_l_seq)
         for bn in json_data["bins"]:
             if "g_" in bn:
                 for (i, each) in enumerate(json_data["bins"][bn]["coverage"]):
@@ -385,7 +395,7 @@ class ReadClassifier:
                     letter_g[i + g_letter_offset]["bp"]["X"] += each["X"]
             if "l_" in bn:
                 for (i, each) in enumerate(json_data["bins"][bn]["coverage"]):
-                    l_offset = i + 1 if not complement else i
+                    l_offset = i #+ 1 if not complement else i
                     letter_l[l_offset]["bp"]["A"] += each["A"]
                     letter_l[l_offset]["bp"]["G"] += each["G"]
                     letter_l[l_offset]["bp"]["C"] += each["C"]
@@ -393,15 +403,14 @@ class ReadClassifier:
                     letter_l[l_offset]["bp"]["N"] += each["N"]
                     letter_l[l_offset]["bp"]["X"] += each["X"]
         offset = fa_g_seq.count("X")
-        # print("last : ", fa_g_seq[-5:])
         for (i, item) in enumerate(letter_g):
             if (
-                item["bp"]["A"]
-                + item["bp"]["G"]
-                + item["bp"]["C"]
-                + item["bp"]["T"]
-                + item["bp"]["N"]
-                != 0
+                    item["bp"]["A"]
+                    + item["bp"]["G"]
+                    + item["bp"]["C"]
+                    + item["bp"]["T"]
+                    + item["bp"]["N"]
+                    != 0
             ):
                 letter_g[i]["c"] = max(
                     item["bp"].keys(), key=lambda key: item["bp"][key]
@@ -413,12 +422,12 @@ class ReadClassifier:
 
         for (i, item) in enumerate(letter_l):
             if (
-                item["bp"]["A"]
-                + item["bp"]["G"]
-                + item["bp"]["C"]
-                + item["bp"]["T"]
-                + item["bp"]["N"]
-                != 0
+                    item["bp"]["A"]
+                    + item["bp"]["G"]
+                    + item["bp"]["C"]
+                    + item["bp"]["T"]
+                    + item["bp"]["N"]
+                    != 0
             ):
                 letter_l[i]["c"] = max(
                     item["bp"].keys(), key=lambda key: item["bp"][key]
@@ -431,19 +440,24 @@ class ReadClassifier:
         output_directory = self._wd
 
         clip_id = insertion.CLIP_START
-        clip_flank = insertion.CLIP_END - insertion.CLIP_START
+        # clip_flank = insertion.CLIP_END - insertion.CLIP_START
+
+        if insertion.THREE_PRIME:
+            end = "3"
+        else:
+            end = "5"
         # TODO - change to use a format string
         with open(
-            os.path.join(
-                output_directory,
-                insertion.CHROMOSOME
-                + "-"
-                + str(clip_id)
-                + "("
-                + str(clip_flank)
-                + ").json.gz.txt",
-            ),
-            "wb+",
+                os.path.join(
+                    output_directory,
+                    insertion.CHROMOSOME
+                    + "-"
+                    + str(clip_id)
+                    + "("
+                    + end
+                    + ").json.gz.txt",
+                ),
+                "wb+",
         ) as outfile:
             json_out = json.dumps(json_data)
             gz = gzip.compress(str.encode(json_out))
@@ -475,16 +489,16 @@ class ReadClassifier:
         ]
         # TODO - make a function to draw the boxes
         h = (
-            "|"
-            + "|".join(
-                [s.ljust(widths[i], " ") for i, s in enumerate(self._heading)]
-            )
-            + "|"
+                "|"
+                + "|".join(
+            [s.ljust(widths[i], " ") for i, s in enumerate(self._heading)]
+        )
+                + "|"
         )
         v = (
-            "|"
-            + "|".join([s.ljust(widths[i], " ") for i, s in enumerate(values)])
-            + "|"
+                "|"
+                + "|".join([s.ljust(widths[i], " ") for i, s in enumerate(values)])
+                + "|"
         )
 
         logging.info("-" * len(h))
@@ -496,13 +510,16 @@ class ReadClassifier:
         #                                         read_type_counts)]
 
     def increment(
-        self,
-        read_type,
-        boolean_which_reads,
-        json_data,
-        mins,
-        queries,
-        complement,
+            self,
+            read_type,
+            boolean_which_reads,
+            json_data,
+            mins,
+            queries,
+            complement,
+            me_width,
+            me_start,
+            me_end,
     ):
         bins = self.READ_BINS[read_type]
         if complement:
@@ -512,9 +529,9 @@ class ReadClassifier:
             ofs = 1
         else:
             min_g = mins[0]
-            mins[0] = 1001
+            mins[0] = me_width + 1
             mins[1] = 1
-            ofs = 1001
+            ofs = me_width
         if bins[0] != "" or bins[1] != "":
             if boolean_which_reads[0]:
                 s_query = self.add_deletions(
@@ -527,7 +544,7 @@ class ReadClassifier:
                         if j < mins[1]:
                             json_data["bins"][bins[0]]["coverage"][
                                 j - mins[0]
-                            ]["X"] += 1
+                                ]["X"] += 1
                 for block in blocks:
                     if complement:
                         b_start = block[0] + 1
@@ -537,7 +554,9 @@ class ReadClassifier:
                     else:
                         # TODO - make a variable for the ref length
                         b_start = (
-                            block[0] + 1 if block[0] + 1 >= 1001 else 1001
+                            block[0] + 1
+                            if block[0] + 1 >= me_width + 1
+                            else me_width + 1
                         )
                         b_end = block[1] + 1
                     for i in range(b_start, b_end):
@@ -566,27 +585,31 @@ class ReadClassifier:
                         b_end = block[1] + 1
                     else:
                         b_start = block[0] + 1
-                        b_end = block[1] + 1 if block[1] + 1 <= 1001 else 1001
+                        b_end = (
+                            block[1] + 1
+                            if block[1] + 1 <= me_width + 1
+                            else me_width + 1
+                        )
                     try:
                         for i in range(len(blocks) - 1):
                             for j in range(blocks[i][1], blocks[i + 1][0] + 1):
                                 if j < mins[0]:
                                     json_data["bins"][bins[1]]["coverage"][
                                         j - mins[1]
-                                    ]["X"] += 1
+                                        ]["X"] += 1
                         for i in range(b_start, b_end):
                             json_data["bins"][bins[1]]["coverage"][
                                 i - mins[1]
-                            ][s_query[i - qs_start]] += 1
+                                ][s_query[i - qs_start]] += 1
                             json_data["bins"][bins[1]]["coverage"][
                                 i - mins[1]
-                            ]["y"] += 1
+                                ]["y"] += 1
                             json_data["bins"][bins[1]]["coverage"][
                                 i - mins[1]
-                            ]["pos"] = (
-                                i + self.L1_REF_SEQ_START
+                                ]["pos"] = (
+                                i + me_start
                                 if not complement
-                                else self.L1_REF_SEQ_END - (i - mins[1])
+                                else me_end - (i - mins[1])
                             )
                     except IndexError:
                         logging.error("error 1")
@@ -604,7 +627,9 @@ class ReadClassifier:
                         )
                     else:
                         b_start = (
-                            block[0] + 1 if block[0] + 1 >= 1001 else 1001
+                            block[0] + 1
+                            if block[0] + 1 >= me_width + 1
+                            else me_width + 1
                         )
                         b_end = block[1] + 1
                     for i in range(len(blocks) - 1):
@@ -612,7 +637,7 @@ class ReadClassifier:
                             if j < mins[1]:
                                 json_data["bins"][bins[0]]["coverage"][
                                     j - mins[0]
-                                ]["X"] += 1
+                                    ]["X"] += 1
                     for i in range(b_start, b_end):
                         json_data["bins"][bins[0]]["coverage"][i - mins[0]][
                             s_query[i - qs_start]
@@ -639,26 +664,31 @@ class ReadClassifier:
                         b_end = block[1] + 1
                     else:
                         b_start = block[0] + 1
-                        b_end = block[1] + 1 if block[1] + 1 <= 1001 else 1001
+                        b_end = (
+                            block[1] + 1
+                            if block[1] + 1 <= me_width + 1
+                            else me_width + 1
+                        )
                     for i in range(len(blocks) - 1):
                         for j in range(blocks[i][1], blocks[i + 1][0] + 1):
                             if j < mins[0]:
-                                json_data["bins"][bins[1]]["coverage"][59][
-                                    "X"
-                                ] += 1
+                                json_data["bins"][bins[1]]["coverage"][
+                                    j - mins[1]
+                                    ]["X"] += 1
                     for i in range(b_start, b_end):
                         json_data["bins"][bins[1]]["coverage"][i - mins[1]][
                             s_query[i - qs_start]
                         ] += 1
+
                         json_data["bins"][bins[1]]["coverage"][i - mins[1]][
                             "y"
                         ] += 1
                         json_data["bins"][bins[1]]["coverage"][i - mins[1]][
                             "pos"
                         ] = (
-                            i + self.L1_REF_SEQ_START
+                            i + me_start
                             if not complement
-                            else self.L1_REF_SEQ_END - (i - mins[1])
+                            else me_end - (i - mins[1])
                         )
 
         mins[0] = min_g
@@ -677,13 +707,13 @@ class ReadClassifier:
                 ret_string += s[: c[1]]  # colored(s[:c[1]], 'green')
                 ret_array.append((s[: c[1]], "green"))
                 leng_string += s[: c[1]]
-                s = s[c[1] :]
+                s = s[c[1]:]
             elif c[0] == 1:
                 ret_string += s[: c[1]]  # colored(s[:c[1]], 'magenta')
                 ret_array.append((ret_array[-1][0][-1], "magenta"))
                 ret_array[-2] = (ret_array[-2][0][:-1], ret_array[-2][1])
                 leng_string += s[: c[1]]
-                s = s[c[1] :]
+                s = s[c[1]:]
             elif c[0] == 2:
                 ret_string += "-" * c[1]  # colored('X'*c[1], 'blue')
                 ret_array.append(("-" * c[1], "black"))
@@ -693,10 +723,10 @@ class ReadClassifier:
                 ret_string += s[: c[1]]  # colored(s[:c[1]], 'red')
                 ret_array.append((s[: c[1]], "red"))
                 leng_string += s[: c[1]]
-                s = s[c[1] :]
+                s = s[c[1]:]
 
         ret_string = (
-            " " * leng + ret_string + " " * (200 - len(leng_string) - leng)
+                " " * leng + ret_string + " " * (200 - len(leng_string) - leng)
         )
         return ret_string, ret_array
 
@@ -707,17 +737,17 @@ class ReadClassifier:
         for action in cigar:
             if action[0] == 0:  # match
                 seq_string += seq_orig[: action[1]]
-                seq_orig = seq_orig[action[1] :]
+                seq_orig = seq_orig[action[1]:]
             elif action[0] == 1:  # insertion
                 # seq_string += seq_orig[:action[1]]
-                seq_orig = seq_orig[action[1] :]
+                seq_orig = seq_orig[action[1]:]
             elif action[0] == 2:  # deletion
                 seq_string += "X" * action[1]
             elif action[0] == 3:  # BAM_CREF_SKIP
                 logging.error("BAM_CREF_SKIP")
             elif action[0] == 4:  # soft clipping
                 # seq_string += seq_orig[:action[1]]
-                seq_orig = seq_orig[action[1] :]
+                seq_orig = seq_orig[action[1]:]
             elif action[0] == 5:  # hard clip
                 logging.error("hc")
             elif action[0] == 6:  # CPAD

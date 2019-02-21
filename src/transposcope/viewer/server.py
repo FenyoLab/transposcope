@@ -14,9 +14,11 @@ from functools import reduce
 
 import cherrypy
 
-CONTENT_PATH = os.path.expanduser('~/projects/fenyolab/transposcope/output/json/')
+CONTENT_PATH = os.path.expanduser(
+    "~/projects/fenyolab/transposcope/output/json/"
+)
 
-PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'web/'))
+PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "web/"))
 
 
 # TODO: do a search of the JSON folder and make a home page with links to all
@@ -26,10 +28,10 @@ class App:
 
 
 config = {
-    '/': {
-        'tools.staticdir.on': True,
-        'tools.staticdir.dir': PATH,
-        'tools.staticdir.index': 'home.html'
+    "/": {
+        "tools.staticdir.on": True,
+        "tools.staticdir.dir": PATH,
+        "tools.staticdir.index": "home.html",
     }
 }
 
@@ -42,29 +44,30 @@ def build_tree(path):
     for path, dirs, files in os.walk(rootdir):
         folders = path[start:].split(os.sep)
         subdir = dict()
-        if 'table_info.json.gz.txt' in files:
+        if "table_info.json.gz.txt" in files:
             found_table_info = True
         parent = reduce(dict.get, folders[:-1], dir)
         parent[folders[-1]] = subdir
     return dir, found_table_info
 
 
-if __name__ == '__main__':
-    if os.path.islink(os.path.join(PATH, 'json')):
-        os.unlink(os.path.join(PATH, 'json'))
-    os.symlink(CONTENT_PATH, os.path.join(PATH, 'json'))
+if __name__ == "__main__":
+    if os.path.islink(os.path.join(PATH, "json")):
+        os.unlink(os.path.join(PATH, "json"))
+    os.symlink(CONTENT_PATH, os.path.join(PATH, "json"))
     tree, found_table = build_tree(CONTENT_PATH)
     if not found_table:
-        print('Error: table_info.json.gz.txt was not found in the specified '
-              'directory')
+        print(
+            "Error: table_info.json.gz.txt was not found in the specified "
+            "directory"
+        )
     else:
-        with open(os.path.join(PATH, 'manifest.json'), 'w') as json_file:
-            json.dump(tree['json'], json_file)
+        with open(os.path.join(PATH, "manifest.json"), "w") as json_file:
+            json.dump(tree["json"], json_file)
 
-        cherrypy.tree.mount(App(), '/', config)
+        cherrypy.tree.mount(App(), "/", config)
 
         cherrypy.engine.start_with_callback(
-            webbrowser.open,
-            ('http://localhost:8080/',),
+            webbrowser.open, ("http://localhost:8080/",)
         )
         cherrypy.engine.block()

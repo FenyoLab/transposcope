@@ -8,12 +8,10 @@ class FastaHandler:
     def __init__(
         self,
         line1_reference_path,
-        reference_genome_folder_path,
-        line1_start,
-        line1_end,
+        reference_genome_folder_path
     ):
-        self.LINE1_START = int(line1_start)
-        self.LINE1_END = int(line1_end)
+        # self.LINE1_START = int(line1_start)
+        # self.LINE1_END = int(line1_end)
         self._reference_genome_seq = None
         self._reference_genome_folder_path = reference_genome_folder_path
         self._current_chromosome = None
@@ -48,10 +46,11 @@ class FastaHandler:
 
     def get_line1_nucleotides_in_range(self, start=None, end=None):
         if start is None and end is None:
-            start = self.LINE1_START
-            end = self.LINE1_END
-        if start < 0 or end < 0:
-            raise ValueError("start and end positions must be positive")
+            logging.error("The insertion should define the element start/end")
+        if end < 0:
+            raise ValueError("end positions must be positive")
+        if start < 0:
+            start = 0
         return self._LINE1_REFERENCE_SEQ[start:end]
 
     def generate_fasta_sequence(self, insertion):
@@ -59,13 +58,19 @@ class FastaHandler:
             insertion.START, insertion.END, insertion.CHROMOSOME
         )
         line_1_sequence = self.get_line1_nucleotides_in_range(
-            self.LINE1_START, self.LINE1_END
+            insertion.LINE1_START, insertion.LINE1_END
         )
         insertion.GENOME_SEQUENCE = reference_genome_sequence
-        if insertion.COMPLEMENT:
+        if insertion.ME_IS_COMPLEMENT:
             line_1_sequence = self.reverse_complement(line_1_sequence)
-            insertion.LINE1_SEQUENCE = line_1_sequence
+
+        insertion.LINE1_SEQUENCE = line_1_sequence
+
+        if (insertion.THREE_PRIME and insertion.ME_IS_COMPLEMENT) or (
+            not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT
+        ):
             return reference_genome_sequence + line_1_sequence
+
         else:
             return line_1_sequence + reference_genome_sequence
 

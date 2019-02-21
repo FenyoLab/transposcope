@@ -443,7 +443,8 @@ class ReadClassifier:
         # clip_flank = insertion.CLIP_END - insertion.CLIP_START
 
         if insertion.THREE_PRIME:
-            end = "3"
+            # TODO: Change this back to 3 for normal use
+            end = "N"
         else:
             end = "5"
         # TODO - change to use a format string

@@ -6,7 +6,7 @@
     "db":"write-math"
   },
   "input":{
-    "bam":"/media/mark/Data/transposcope/bams/",
+    "bam":"/media/mark/Data/transposcope/somatic_insertion_finder/bams/",
     "insertion_table_dir":"/home/mark/projects/fenyolab/transposcope/output/insertion_tables/",
     "label":"positive"
   },

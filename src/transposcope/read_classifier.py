@@ -76,8 +76,8 @@ class ReadClassifier:
         # max_l1 = self.L1_REF_SEQ_END
         min_l1 = insertion.LINE1_START
         max_l1 = insertion.LINE1_END
-        min_g = insertion.TARGET_START
-        max_g = insertion.TARGET_END
+        min_g = insertion.START
+        max_g = insertion.END
         complement = 0
         if (insertion.THREE_PRIME and insertion.ME_IS_COMPLEMENT) or (
                 not insertion.THREE_PRIME and not insertion.ME_IS_COMPLEMENT
@@ -237,9 +237,9 @@ class ReadClassifier:
         json_data["stats"]["sequence_l"] = letter_l
         if complement:
             json_data["stats"]["ClipS"] = insertion.CLIP_START - max_g
-            json_data["stats"]["ClipE"] = insertion.CLIP_END - max_g - 1
+            json_data["stats"]["ClipE"] = insertion.CLIP_END - max_g
             (json_data["stats"]["ClipWidth"]) = (
-                    insertion.CLIP_END - insertion.CLIP_START - 1
+                    insertion.CLIP_END - insertion.CLIP_START
             )
             json_data["stats"]["start"] = min_g - max_g - 1
             json_data["stats"]["end"] = (
@@ -247,8 +247,8 @@ class ReadClassifier:
                                         ) + l_offset
         else:
             json_data["stats"]["ClipS"] = zero_ - min_g
-            json_data["stats"]["ClipE"] = zero - min_g - 1
-            (json_data["stats"]["ClipWidth"]) = (
+            json_data["stats"]["ClipE"] = zero - min_g
+            json_data["stats"]["ClipWidth"] = (
                     json_data["stats"]["ClipE"] - json_data["stats"]["ClipS"]
             )
             json_data["stats"]["start"] = (

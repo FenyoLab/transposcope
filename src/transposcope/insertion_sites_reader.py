@@ -1,3 +1,4 @@
+import sys
 from collections import namedtuple
 
 
@@ -29,6 +30,7 @@ class InsertionSiteReader:
                     insertion_sites_file_path
                 )
             )
+            sys.exit()
         self.header = header
         self.all_headers = (
             self.insertion_sites_file.readline().strip().split("\t")

@@ -20,8 +20,8 @@ from src.transposcope.realigner import Realigner
 
 
 def get_config_from_file():
-    # with open('./config/config_hg19.json') as json_data_file:
-    with open('./config/config.json') as json_data_file:
+    with open('./config/config_hg19.json') as json_data_file:
+    # with open('./config/config.json') as json_data_file:
         data = json.load(json_data_file)
     return data
 
@@ -306,14 +306,19 @@ def main(reference_type,
 
 
 if __name__ in '__main__':
+    main('fp',
+         'Ovarian',
+         'test_normal_vs_tumor', '918', 'CTTGTA',
+         'CTTGTA.fastq.cleaned.fastq.pcsort.bam',
+         'CTTGTA.tab')
+# main('fp',
+#      'test_anatomy',
+#      'test_type', 'test_patient_name', 'test_patient_id',
+#      'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
+#      'A-Normal_GTCGTAGA_L003001_all.tab')
     # main('fp',
     #      'test_anatomy',
-    #      'test_type', 'test_patient_name', 'test_patient_id',
-    #      'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
-    #      'A-Normal_GTCGTAGA_L003001_all.tab')
-    main('fp',
-         'test_anatomy',
-         'test_melt', 'test_patient_name', 'test_patient_id',
-         'NA19240.bam',
-         'LINE1.tab')
+    #      'test_melt', 'test_patient_name', 'test_patient_id',
+    #      'NA19240.bam',
+    #      'LINE1.tab')
     # reference_type, anatomy, sample_type, patient_id

@@ -146,18 +146,19 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
     ]
     for row_data in extracted_vcf_data:
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
+        assess = row_data['INFO']['ASSESS']
         if strand_me == "null":
             # TODO - write a better format string
             print("WARNING - strand is not specified:", row_data)
         else:
             result_1 = [
                 row_data["CHROM"],
-                int(row_data["POS"]) + 1 - target_width,
-                int(row_data["POS"]) + 1,
-                int(row_data["POS"]) + 1,
-                int(row_data["POS"]) + 1,
+                int(row_data["POS"]) - target_width,
+                int(row_data["POS"]),
+                int(row_data["POS"]),
+                int(row_data["POS"]),
                 strand_me,
-                1.0,
+                assess,
                 strand_me == "-",
                 "",
                 int(start_me) - 1,
@@ -171,8 +172,8 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                 int(row_data["POS"]) + 1,
                 int(row_data["POS"]) + 1,
                 strand_me,
-                1.0,
-                strand_me == "+",
+                assess,
+                strand_me != "-",
                 "",
                 int(start_me) - 1,
                 int(end_me) + 1,

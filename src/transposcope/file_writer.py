@@ -21,6 +21,7 @@ class FileWriter:
         fa = open(fasta_path, "w")
         fa.write(fasta_header)
         fa.write(fasta_string)
+        fa.write('\n')
         fa.close()
         return fasta_path
 

@@ -54,6 +54,13 @@ def transposcope_entry():
         default="ungrouped",
     )
 
+    parser.add_argument(
+        "--keep_files",
+        type=bool,
+        help="Flag which determines whether intermediate bam files and fasta files are deleted"
+        default=False
+        )
+
     args = parser.parse_args()
     print(args)
     #    group1,

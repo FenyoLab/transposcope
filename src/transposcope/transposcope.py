@@ -13,7 +13,6 @@ import os
 import shutil
 
 # import sys
-import sys
 
 from src.transposcope.bam_handler import BamHandler
 
@@ -116,8 +115,7 @@ def main(
     insertion_list_path,
     me_ref_path,
     host_ref_path,
-    genes_file_path
-
+    genes_file_path,
 ):
     print("starting")
 
@@ -162,10 +160,7 @@ def main(
     insertion_sites_reader = InsertionSiteReader(insertion_list_path)
     logging.info("loading bam")
     bam_handler = BamHandler(bam_path)
-    fasta_handler = FastaHandler(
-        me_ref_path,
-        host_ref_path
-    )
+    fasta_handler = FastaHandler(me_ref_path, host_ref_path)
     insertions = []
     reads_dictionary = {True: ReadsDict(), False: ReadsDict()}
     logging.info("finding target regions")
@@ -224,7 +219,7 @@ def main(
             gene_info = gene_handler.find_nearest_gene(
                 insertion.CHROMOSOME, insertion.INSERTION_SITE
             )
-        
+
         gene_info = ("Normal", "rgb(3, 119, 190)")
 
         # heading_table['Data']\

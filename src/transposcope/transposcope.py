@@ -14,17 +14,15 @@ import shutil
 
 # import sys
 
-from src.transposcope.bam_handler import BamHandler
-
-# from transposcope.constants import LABEL
-from src.transposcope.fasta_handler import FastaHandler
-from src.transposcope.file_writer import FileWriter
-from src.transposcope.gene_handler import GeneHandler
-from src.transposcope.insertion import Insertion
-from src.transposcope.insertion_sites_reader import InsertionSiteReader
-from src.transposcope.read_classifier import ReadClassifier
-from src.transposcope.reads_dict import ReadsDict
-from src.transposcope.realigner import Realigner
+from transposcope.bam_handler import BamHandler
+from transposcope.fasta_handler import FastaHandler
+from transposcope.file_writer import FileWriter
+from transposcope.gene_handler import GeneHandler
+from transposcope.insertion import Insertion
+from transposcope.insertion_sites_reader import InsertionSiteReader
+from transposcope.read_classifier import ReadClassifier
+from transposcope.reads_dict import ReadsDict
+from transposcope.realigner import Realigner
 
 
 # from memory_profiler import profile

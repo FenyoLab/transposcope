@@ -5,11 +5,7 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 
 class FastaHandler:
-    def __init__(
-        self,
-        line1_reference_path,
-        reference_genome_folder_path
-    ):
+    def __init__(self, line1_reference_path, reference_genome_folder_path):
         # self.LINE1_START = int(line1_start)
         # self.LINE1_END = int(line1_end)
         self._reference_genome_seq = None

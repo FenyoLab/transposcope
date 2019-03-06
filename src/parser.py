@@ -8,7 +8,7 @@ Description: Command line parser which runs relative TranspoScope
 """
 
 import argparse
-import src.transposcope.transposcope as ts
+import transposcope.transposcope as ts
 
 
 def transposcope_entry():
@@ -57,9 +57,9 @@ def transposcope_entry():
     parser.add_argument(
         "--keep_files",
         type=bool,
-        help="Flag which determines whether intermediate bam files and fasta files are deleted"
-        default=False
-        )
+        help="Flag which determines whether intermediate bam files and fasta files are deleted",
+        default=False,
+    )
 
     args = parser.parse_args()
     print(args)

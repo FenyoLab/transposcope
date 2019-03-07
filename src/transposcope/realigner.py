@@ -3,12 +3,8 @@ import subprocess
 
 
 class Realigner:
-    def __init__(
-        self, output_path, bowtie_index_fasta_script, bowtie_realign_script
-    ):
+    def __init__(self, output_path):
         self.output_path = output_path
-        self.fa_index_script = bowtie_index_fasta_script
-        self.realign_script = bowtie_realign_script
         if not os.path.exists(os.path.join(self.output_path, "fasta_indexed")):
             os.makedirs(os.path.join(self.output_path, "fasta_indexed"))
         if not os.path.exists(os.path.join(self.output_path, "bam")):
@@ -35,13 +31,7 @@ class Realigner:
             self.output_path, "fasta_indexed", file_name + ".indexed.fasta"
         )
 
-        cmd = [
-            os.path.join(
-                os.getcwd(), "shell_scripts/runBowtie2v223BuildIndex.sh"
-            ),
-            fasta_file_path,
-            indexed_fa_path,
-        ]
+        cmd = ["bowtie2-build", fasta_file_path, indexed_fa_path]
 
         # Python 3.4
         subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
@@ -51,14 +41,22 @@ class Realigner:
         )
 
         cmd = [
-            os.path.join(os.getcwd(), "shell_scripts/runBowtie2v223PE.sh"),
-            indexed_fa_path,
-            fastq1_path,
-            fastq2_path,
-            sam_path,
-            "2",
+            "bowtie2",
+            "-X",
             "1000",
-            "FALSE",
+            "--local",
+            "--phred33",
+            "--sensitive",
+            "-p",
+            " 6",
+            "-x",
+            indexed_fa_path,
+            "-1",
+            fastq1_path,
+            "-2",
+            fastq2_path,
+            "-S",
+            sam_path,
         ]
 
         # Python 3.4

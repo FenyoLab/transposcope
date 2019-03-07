@@ -12,7 +12,7 @@ import logging.config
 import os
 import shutil
 
-# import sys
+import sys
 
 from transposcope.bam_handler import BamHandler
 from transposcope.fasta_handler import FastaHandler
@@ -28,11 +28,11 @@ from transposcope.realigner import Realigner
 # from memory_profiler import profile
 
 
-def get_config_from_file():
-    with open("./config/config_hg19.json") as json_data_file:
-        # with open('./config/config.json') as json_data_file:
-        data = json.load(json_data_file)
-    return data
+# def get_config_from_file():
+# with open("./config/config_hg19.json") as json_data_file:
+# # with open('./config/config.json') as json_data_file:
+# data = json.load(json_data_file)
+# return data
 
 
 def setup_logging(
@@ -44,8 +44,8 @@ def setup_logging(
     """Setup logging configuration
 
     """
-    if not os.path.exists("log"):
-        os.makedirs("log")
+    if logging_folder == "./log/" and not os.path.exists("logs"):
+        os.makedirs("logs")
     value = os.getenv(env_key, None)
     if value:
         path = value
@@ -67,6 +67,7 @@ def setup_logging(
 def create_output_folder_structure(
     output_folder_path, group1, group2, sample_id
 ):
+
     reference_path = os.path.join(
         output_folder_path,
         "ref",
@@ -74,8 +75,9 @@ def create_output_folder_structure(
         "{}".format(group2),
         "{}".format(sample_id),
     )
+
     transposcope_path = os.path.join(
-        output_folder_path,
+        "web",
         "json",
         "{}".format(group1),
         "{}".format(group2),
@@ -94,6 +96,12 @@ def create_output_folder_structure(
         shutil.rmtree(logs_path)
     if os.path.exists(transposcope_path):
         shutil.rmtree(transposcope_path)
+
+    web_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "viewer/web.zip"
+    )
+    shutil.unpack_archive(web_path)
+
     os.makedirs(reference_path)
     os.makedirs(logs_path)
     os.makedirs(transposcope_path)
@@ -101,27 +109,27 @@ def create_output_folder_structure(
     os.mkdir(os.path.join(reference_path, "fastq"))
     os.mkdir(os.path.join(reference_path, "sam"))
     os.mkdir(os.path.join(reference_path, "logs"))
+
     return reference_path, transposcope_path, logs_path
 
 
-def main(
-    # reference_type,
-    group1,
-    group2,
-    sample_id,
-    bam_path,
-    insertion_list_path,
-    me_ref_path,
-    host_ref_path,
-    genes_file_path,
-):
+def main(args):
+    group1 = args.group1
+    group2 = args.group2
+    sample_id = args.sample_id
+    bam_path = args.bam
+    insertion_list_path = args.index
+    me_ref_path = args.me_reference
+    host_ref_path = args.host_reference
+    genes_file_path = args.genes
+    keep_files = args.keep_files
     print("starting")
 
-    config = get_config_from_file()
+    # config = get_config_from_file()
     # TODO - allow for multiple labels
     #  - eg : pos, unlabeled - pos - negative, pos
     # TODO - make the reference subdirectories using the writer class
-    output_folder_path = os.path.realpath(config["output"]["root"])
+    output_folder_path = os.path.join(os.getcwd(), "output")
     (
         reference_path,
         transposcope_path,
@@ -154,7 +162,6 @@ def main(
     # insertion_list_path = os.path.join(insertion_list_folder, insertion_list)
 
     logging.info(bam_path)
-    print("ilp", insertion_list_path)
     insertion_sites_reader = InsertionSiteReader(insertion_list_path)
     logging.info("loading bam")
     bam_handler = BamHandler(bam_path)
@@ -178,16 +185,16 @@ def main(
 
     logging.info("Processing insertions")
     file_writer = FileWriter()
-    realigner = Realigner(
-        reference_path,
-        config["bowtie"]["fastaIndexed"],
-        config["bowtie"]["realign"],
-    )
+    realigner = Realigner(reference_path)
     classifier = ReadClassifier(transposcope_path)
-    gene_handler = GeneHandler(config["reference"]["refFlat"])
+    if genes_file_path:
+        gene_handler = GeneHandler(genes_file_path)
     insertions.sort(key=lambda x: x.CHROMOSOME)
     heading_table = {"Heading": ("ID", "Gene", "Probability"), "data": []}
 
+    ten_percent = len(insertions) / 10
+    next_log = ten_percent
+    completed = 0
     for insertion in insertions:
         file_name = "{i.CHROMOSOME}_{i.START}-{i.END}".format(i=insertion)
         insertion.fasta_string = fasta_handler.generate_fasta_sequence(
@@ -200,8 +207,6 @@ def main(
             insertion.fasta_string,
             ">{i.CHROMOSOME}_{i.START}-{i.END}\n".format(i=insertion),
         )
-        logging.info(file_name)
-
         fastq1_path, fastq2_path = file_writer.write_fastq(
             reference_path,
             reads_dictionary[insertion.THREE_PRIME],
@@ -217,12 +222,12 @@ def main(
             gene_info = gene_handler.find_nearest_gene(
                 insertion.CHROMOSOME, insertion.INSERTION_SITE
             )
-
-        gene_info = ("Normal", "rgb(3, 119, 190)")
+        else:
+            gene_info = ("Normal", "rgb(3, 119, 190)")
 
         # heading_table['Data']\
         if insertion.THREE_PRIME:
-            end = "N"
+            end = "3"
         else:
             end = "5"
         heading_table["data"].append(
@@ -235,11 +240,20 @@ def main(
             ]
         )
         classifier.classify_insertion(insertion, sorted_bam_path)
+
+        completed += 1
+        if completed > next_log:
+            logging.info(
+                "Percentage of insertions processed: {:.2%}.".format(
+                    next_log / len(insertions)
+                )
+            )
+            next_log += ten_percent
     #     TODO - write out bedfile
     #     TODO - write out index file
     #     TODO - delete local realignment files (test this)
     #     TODO - add fastq to removal
-    if config["output"]["removeAlignmentFiles"] is "Y":
+    if not keep_files:
         if os.path.exists(fasta_path):
             shutil.rmtree(os.path.dirname(fasta_path))
         if os.path.exists(sorted_bam_path):
@@ -249,23 +263,3 @@ def main(
         os.path.join(transposcope_path, "table_info.json.gz.txt"),
         heading_table,
     )
-
-
-if __name__ in "__main__":
-    main(
-        "Ovarian",
-        "test_normal_vs_tumor",
-        "918",
-        "CTTGTA",
-        "CTTGTA.fastq.cleaned.fastq.pcsort.bam",
-        "CTTGTA.tab",
-    )
-# main('fp',
-#      'test_type', 'test_patient_name', 'test_patient_id',
-#      'A-Normal_GTCGTAGA_L003001.fastq.gz.cleaned.fastq.pcsort.bam',
-#      'A-Normal_GTCGTAGA_L003001_all.tab')
-# main('fp',
-#      'test_melt', 'test_patient_name', 'test_patient_id',
-#      'NA19240.bam',
-#      'LINE1.tab')
-# reference_type, anatomy, sample_type, patient_id

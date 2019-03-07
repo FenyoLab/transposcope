@@ -17,11 +17,6 @@ class FastaHandler:
             ].upper()
 
     def set_reference_genome(self, reference_genome_chromosome):
-        logging.info(
-            "changing reference genome to {}".format(
-                reference_genome_chromosome
-            )
-        )
         file_path = os.path.join(
             self._reference_genome_folder_path,
             reference_genome_chromosome + ".fa",

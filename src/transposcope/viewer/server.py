@@ -14,11 +14,8 @@ from functools import reduce
 
 import cherrypy
 
-CONTENT_PATH = os.path.expanduser(
-    "~/projects/fenyolab/transposcope/output/json/"
-)
-
-PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "web/"))
+CONTENT_PATH = os.path.join(os.getcwd(), "json")
+PATH = os.getcwd()
 
 
 # TODO: do a search of the JSON folder and make a home page with links to all
@@ -51,10 +48,8 @@ def build_tree(path):
     return dir, found_table_info
 
 
-if __name__ == "__main__":
-    if os.path.islink(os.path.join(PATH, "json")):
-        os.unlink(os.path.join(PATH, "json"))
-    os.symlink(CONTENT_PATH, os.path.join(PATH, "json"))
+def main(args=None):
+    print(CONTENT_PATH)
     tree, found_table = build_tree(CONTENT_PATH)
     if not found_table:
         print(
@@ -71,3 +66,7 @@ if __name__ == "__main__":
             webbrowser.open, ("http://localhost:8080/",)
         )
         cherrypy.engine.block()
+
+
+if __name__ == "__main__":
+    main()

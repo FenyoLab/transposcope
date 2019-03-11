@@ -78,7 +78,6 @@ def transposcope_entry():
     viewer_parser.set_defaults(func=server.main)
 
     args = parser.parse_args()
-    print(args.func(args))
 
     # ts.main(
     # args.group1,

@@ -79,18 +79,6 @@ def transposcope_entry():
 
     args = parser.parse_args()
 
-    # ts.main(
-    # args.group1,
-    # args.group2,
-    # args.sample_id,
-    # args.bam,
-    # args.index,
-    # args.me_reference,
-    # args.host_reference,
-    # args.genes,
-    # args.keep_files,
-    # )
-
 
 if __name__ == "__main__":
     transposcope_entry()

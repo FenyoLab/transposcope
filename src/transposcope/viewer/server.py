@@ -14,23 +14,10 @@ from functools import reduce
 
 import cherrypy
 
-CONTENT_PATH = os.path.join(os.getcwd(), "json")
-PATH = os.getcwd()
-
-
 # TODO: do a search of the JSON folder and make a home page with links to all
 #       options
 class App:
     pass
-
-
-config = {
-    "/": {
-        "tools.staticdir.on": True,
-        "tools.staticdir.dir": PATH,
-        "tools.staticdir.index": "home.html",
-    }
-}
 
 
 def build_tree(path):
@@ -49,11 +36,19 @@ def build_tree(path):
 
 
 def main(args=None):
-    print(CONTENT_PATH)
+    PATH = os.path.abspath(args.web_directory)
+    CONTENT_PATH = os.path.join(PATH, "json")
+    config = {
+        "/": {
+            "tools.staticdir.on": True,
+            "tools.staticdir.dir": PATH,
+            "tools.staticdir.index": "home.html",
+        }
+    }
     tree, found_table = build_tree(CONTENT_PATH)
     if not found_table:
         print(
-            "Error: table_info.json.gz.txt was not found in the specified "
+            "ERROR: table_info.json.gz.txt was not found in the specified "
             "directory"
         )
     else:

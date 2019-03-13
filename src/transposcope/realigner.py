@@ -11,21 +11,21 @@ class Realigner:
             os.makedirs(os.path.join(self.output_path, "bam"))
         if not os.path.exists(os.path.join(self.output_path, "bam_sorted")):
             os.makedirs(os.path.join(self.output_path, "bam_sorted"))
-        if not os.path.exists(os.path.join(self.output_path, "bowtie")):
-            os.makedirs(os.path.join(self.output_path, "bowtie"))
+        if not os.path.exists(os.path.join(self.output_path, "logs")):
+            os.makedirs(os.path.join(self.output_path, "logs"))
 
-        self.BTOUT = open(
-            os.path.join(self.output_path, "bowtie", "bt2.output.log"), "w"
+        self.al_out = open(
+            os.path.join(self.output_path, "logs", "alignment.output.log"), "w"
         )
-        self.BTERR = open(
-            os.path.join(self.output_path, "bowtie", "bt2.error.log"), "w"
+        self.al_err = open(
+            os.path.join(self.output_path, "logs", "alignment.error.log"), "w"
         )
 
     def realign(self, fasta_file_path, fastq1_path, fastq2_path, file_name):
         cmd = ["samtools", "faidx", fasta_file_path]
 
         # Python 3.4
-        subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
         indexed_fa_path = os.path.join(
             self.output_path, "fasta_indexed", file_name + ".indexed.fasta"
@@ -34,7 +34,7 @@ class Realigner:
         cmd = ["bowtie2-build", fasta_file_path, indexed_fa_path]
 
         # Python 3.4
-        subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
         sam_path = os.path.join(
             self.output_path, os.path.join("sam", file_name + ".sam")
@@ -60,7 +60,7 @@ class Realigner:
         ]
 
         # Python 3.4
-        subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
         bam_path = os.path.join(
             self.output_path, os.path.join("bam", file_name + ".bam")
@@ -69,9 +69,9 @@ class Realigner:
         cmd = ["samtools", "view", "-b", "-o", bam_path, sam_path]
 
         # Python 3.4
-        subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
         # Python 3.5
-        # p = subprocess.run(cmd, stdout=BTOUT, stderr=BTERR)
+        # p = subprocess.run(cmd, stdout=al_out, stderr=al_err)
         # p.check_returncode()  # change this to log errors
 
         bam_sorted_path = os.path.join(
@@ -82,7 +82,7 @@ class Realigner:
         cmd = ["samtools", "sort", "-o", bam_sorted_path, bam_path]
 
         # Python 3.4
-        subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
         bai_path = os.path.join(
             self.output_path,
@@ -92,7 +92,7 @@ class Realigner:
         cmd = ["samtools", "index", bam_sorted_path, bai_path]
 
         # Python 3.4
-        subprocess.call(cmd, stdout=self.BTOUT, stderr=self.BTERR)
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
         # dir_path = [
         #     os.path.join(self.output_path, 'fastq'),

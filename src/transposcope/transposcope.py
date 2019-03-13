@@ -7,12 +7,11 @@ Description: Main entry point for generating files required by the
             visualization
 """
 
+from functools import reduce
 import json
 import logging.config
 import os
 import shutil
-
-import sys
 
 from transposcope.bam_handler import BamHandler
 from transposcope.fasta_handler import FastaHandler
@@ -35,29 +34,20 @@ from transposcope.realigner import Realigner
 # return data
 
 
-def setup_logging(
-    path="./config/logging.json",
-    default_level=logging.INFO,
-    env_key="LOG_CFG",
-    logging_folder="./log/",
-):
+def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
     """Setup logging configuration
 
     """
-    if logging_folder == "./log/" and not os.path.exists("logs"):
-        os.makedirs("logs")
     value = os.getenv(env_key, None)
     if value:
         path = value
+    if not path:
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "config/logging.json"
+        )
     if os.path.exists(path):
         with open(path, "rt") as f:
             config = json.load(f)
-            (
-                config["handlers"]["info_file_handler"]["filename"]
-            ) = os.path.join(logging_folder, "info.log")
-            (
-                config["handlers"]["error_file_handler"]["filename"]
-            ) = os.path.join(logging_folder, "error.log")
         logging.config.dictConfig(config)
 
     else:
@@ -83,17 +73,8 @@ def create_output_folder_structure(
         "{}".format(group2),
         "{}".format(sample_id),
     )
-    logs_path = os.path.join(
-        output_folder_path,
-        "logs",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
-    )
     if os.path.exists(reference_path):
         shutil.rmtree(reference_path)
-    if os.path.exists(logs_path):
-        shutil.rmtree(logs_path)
     if os.path.exists(transposcope_path):
         shutil.rmtree(transposcope_path)
 
@@ -103,14 +84,27 @@ def create_output_folder_structure(
     shutil.unpack_archive(web_path)
 
     os.makedirs(reference_path)
-    os.makedirs(logs_path)
     os.makedirs(transposcope_path)
     os.mkdir(os.path.join(reference_path, "fasta"))
     os.mkdir(os.path.join(reference_path, "fastq"))
     os.mkdir(os.path.join(reference_path, "sam"))
-    os.mkdir(os.path.join(reference_path, "logs"))
 
-    return reference_path, transposcope_path, logs_path
+    return reference_path, transposcope_path
+
+
+def build_tree(path):
+    dir_dict = {}
+    rootdir = path.rstrip(os.sep)
+    found_table_info = False
+    start = rootdir.rfind(os.sep) + 1
+    for path, dirs, files in os.walk(rootdir):
+        folders = path[start:].split(os.sep)
+        subdir = dict()
+        if "table_info.json.gz.txt" in files:
+            found_table_info = True
+        parent = reduce(dict.get, folders[:-1], dir_dict)
+        parent[folders[-1]] = subdir
+    return dir_dict, found_table_info
 
 
 def main(args):
@@ -123,18 +117,13 @@ def main(args):
     host_ref_path = args.host_reference
     genes_file_path = args.genes
     keep_files = args.keep_files
-    print("starting")
 
     # config = get_config_from_file()
     # TODO - allow for multiple labels
     #  - eg : pos, unlabeled - pos - negative, pos
     # TODO - make the reference subdirectories using the writer class
     output_folder_path = os.path.join(os.getcwd(), "output")
-    (
-        reference_path,
-        transposcope_path,
-        logs_path,
-    ) = create_output_folder_structure(
+    (reference_path, transposcope_path) = create_output_folder_structure(
         output_folder_path,
         # reference_type,
         group1,
@@ -142,48 +131,56 @@ def main(args):
         sample_id,
     )
 
-    setup_logging(logging_folder=logs_path)
-    logging.info("--TranspoScope--")
+    setup_logging()
+    logging.info("***  TranspoScope ***")
+    logging.info("### Input ###")
+    logging.info(
+        " - Index File Path: {}".format(os.path.abspath(insertion_list_path))
+    )
+    logging.info(" - BAM File Path: {}".format(os.path.abspath(bam_path)))
+    logging.info(
+        " - Mobile Element Reference File Path: {}".format(
+            os.path.abspath(me_ref_path)
+        )
+    )
+    logging.info(
+        " - Host Genome Folder Path: {}".format(os.path.abspath(host_ref_path))
+    )
+    logging.info(
+        " - refFlat.txt Path: {}".format(
+            os.path.abspath(genes_file_path)
+            if genes_file_path
+            else "undefined"
+        )
+    )
 
-    # (
-    #     repred_path,
-    #     bam_path
-    # ) = find_files(
-    #     file_id,
-    #     anatomy,
-    #     reference_type,
-    #     config
-    # )
-    # bam_folder = os.path.expanduser(config["input"]["bam"])
-    # bam_path = os.path.join(bam_folder, bam_name)
-    # insertion_list_folder = os.path.expanduser(
-    #     config["input"]["insertion_table_dir"]
-    # )
-    # insertion_list_path = os.path.join(insertion_list_folder, insertion_list)
+    logging.info(" - Group 1: {}".format(group1))
+    logging.info(" - Group 2: {}".format(group2))
+    logging.info(" - Keep Intermediate Files: {}".format(keep_files))
 
-    logging.info(bam_path)
     insertion_sites_reader = InsertionSiteReader(insertion_list_path)
-    logging.info("loading bam")
+    logging.info("### Processing BAM File ###")
     bam_handler = BamHandler(bam_path)
     fasta_handler = FastaHandler(me_ref_path, host_ref_path)
     insertions = []
     reads_dictionary = {True: ReadsDict(), False: ReadsDict()}
-    logging.info("finding target regions")
+    logging.info(" - Finding Reads in Target Regions")
     for insertion_stats in insertion_sites_reader.read_lines():
         temp_insertion = Insertion(named_tuple=insertion_stats)
         reads_in_region = bam_handler.fetch_reads_in_region(temp_insertion)
         reads_dictionary[temp_insertion.THREE_PRIME] += reads_in_region
         temp_insertion.read_keys_in_target_region = reads_in_region.keys()
         insertions.append(temp_insertion)
-    logging.info("finding pairs")
+    logging.info("    --- DONE ---")
+    logging.info(" - Finding Paired Ends")
     for read in bam_handler.all_reads():
         if read.query_name in reads_dictionary[True]:
             reads_dictionary[True].insert(read)
 
         if read.query_name in reads_dictionary[False]:
             reads_dictionary[False].insert(read)
-
-    logging.info("Processing insertions")
+    logging.info("    --- DONE ---")
+    logging.info("### Processing Insertions ###")
     file_writer = FileWriter()
     realigner = Realigner(reference_path)
     classifier = ReadClassifier(transposcope_path)
@@ -223,7 +220,7 @@ def main(args):
                 insertion.CHROMOSOME, insertion.INSERTION_SITE
             )
         else:
-            gene_info = ("Normal", "rgb(3, 119, 190)")
+            gene_info = ("undefined", "rgb(3, 119, 190)")
 
         # heading_table['Data']\
         if insertion.THREE_PRIME:
@@ -244,22 +241,41 @@ def main(args):
         completed += 1
         if completed > next_log:
             logging.info(
-                "Percentage of insertions processed: {:.2%}.".format(
-                    next_log / len(insertions)
+                " - Percentage of insertions processed: {:.2%}.".format(
+                    completed / len(insertions)
                 )
             )
             next_log += ten_percent
     #     TODO - write out bedfile
     #     TODO - write out index file
-    #     TODO - delete local realignment files (test this)
-    #     TODO - add fastq to removal
+    logging.info("    --- DONE ---")
     if not keep_files:
-        if os.path.exists(fasta_path):
-            shutil.rmtree(os.path.dirname(fasta_path))
-        if os.path.exists(sorted_bam_path):
-            shutil.rmtree(os.path.dirname(sorted_bam_path))
+        logging.info("### Cleanup ###")
+        logging.info(
+            "Cleaning up generated files in {}".format(reference_path)
+        )
+        if os.path.exists(reference_path):
+            shutil.rmtree(os.path.dirname(reference_path))
+        logging.info("    --- DONE ---")
+    logging.info("### Building Website ###")
+
+    web_dir = os.path.join(os.getcwd(), "web")
+
+    logging.info(" The website is being built into: {}".format(web_dir))
 
     file_writer.write_json(
         os.path.join(transposcope_path, "table_info.json.gz.txt"),
         heading_table,
+    )
+
+    tree, found_table = build_tree(os.path.join(web_dir, "json"))
+
+    with open(os.path.join(web_dir, "manifest.json"), "w") as json_file:
+        json.dump(tree["json"], json_file)
+    logging.info("    --- DONE ---")
+
+    logging.info(
+        " to view the generated files in your browser run:\n\t\t'transposcope view {}'".format(
+            web_dir
+        )
     )

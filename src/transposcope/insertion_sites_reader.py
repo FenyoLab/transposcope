@@ -1,10 +1,27 @@
-import sys
+"""
+File: insertion_sites_reader.py
+Author: Mark Grivainis
+Email: mark.grivainis@fenyolab.org
+Github: https://github.com/MarkGrivainis
+Description: Script to process insertion site information from a tab
+             separated file
+"""
+
 from collections import namedtuple
 
 
 class InsertionSiteReader:
+    """
+        Defines methods required for reading insertion site information
+        from a tab delimeted file.
+        These files must contain a header and the columns should be listed
+        in the correct order.
+    """
+
     def __init__(self, insertion_sites_file_path, header=None):
         """
+        Constructor
+
         :param insertion_sites_file_path:
         :param header:
         """
@@ -26,16 +43,36 @@ class InsertionSiteReader:
             self.insertion_sites_file = open(insertion_sites_file_path, "r")
         except IOError:
             print(
-                "insertion sites file path invalid: {}".format(
+                "\n\nERROR: Insertion sites file path invalid: {}".format(
                     insertion_sites_file_path
                 )
             )
-            sys.exit()
+            raise SystemExit()
         self.header = header
         self.all_headers = (
             self.insertion_sites_file.readline().strip().split("\t")
         )
+        if not self.valid_header():
+            raise SystemExit(
+                "\n\nERROR: Insertion sites file '{}' does not contain a valid header".format(
+                    insertion_sites_file_path
+                )
+            )
         self.insertion_line = namedtuple("insertion_line", self.all_headers)
+
+    def valid_header(self) -> bool:
+        """Description
+
+        :param path:  The path to the input file
+        :type  path  str
+
+        :return:  Whether the file is potentially valid or not
+        :rtype :  bool
+
+        """
+        if self.all_headers[0] != "chromosome":
+            return False
+        return True
 
     def __parse_line(self, line):
         line = line.strip().split("\t")
@@ -70,4 +107,4 @@ class InsertionSiteReader:
             if line.strip():
                 line = self.__parse_line(line)
                 line_with_header = self.insertion_line(**line)
-                yield (line_with_header)
+                yield line_with_header

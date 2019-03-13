@@ -14,26 +14,10 @@ from functools import reduce
 
 import cherrypy
 
-CONTENT_PATH = os.path.expanduser(
-    "~/projects/fenyolab/transposcope/output/json/"
-)
-
-PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "web/"))
-
-
 # TODO: do a search of the JSON folder and make a home page with links to all
 #       options
 class App:
     pass
-
-
-config = {
-    "/": {
-        "tools.staticdir.on": True,
-        "tools.staticdir.dir": PATH,
-        "tools.staticdir.index": "home.html",
-    }
-}
 
 
 def build_tree(path):
@@ -51,14 +35,20 @@ def build_tree(path):
     return dir, found_table_info
 
 
-if __name__ == "__main__":
-    if os.path.islink(os.path.join(PATH, "json")):
-        os.unlink(os.path.join(PATH, "json"))
-    os.symlink(CONTENT_PATH, os.path.join(PATH, "json"))
+def main(args=None):
+    PATH = os.path.abspath(args.web_directory)
+    CONTENT_PATH = os.path.join(PATH, "json")
+    config = {
+        "/": {
+            "tools.staticdir.on": True,
+            "tools.staticdir.dir": PATH,
+            "tools.staticdir.index": "home.html",
+        }
+    }
     tree, found_table = build_tree(CONTENT_PATH)
     if not found_table:
         print(
-            "Error: table_info.json.gz.txt was not found in the specified "
+            "ERROR: table_info.json.gz.txt was not found in the specified "
             "directory"
         )
     else:
@@ -71,3 +61,7 @@ if __name__ == "__main__":
             webbrowser.open, ("http://localhost:8080/",)
         )
         cherrypy.engine.block()
+
+
+if __name__ == "__main__":
+    main()

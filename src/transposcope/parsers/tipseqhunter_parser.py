@@ -1,3 +1,12 @@
+"""
+File: tipseqhunter_parser.py
+Author: Mark Grivainis
+Email: mark.grivainis@fenyolab.org
+Github: https://github.com/MarkGrivainis
+Description: A parser which converts TIPseqHunter REPRED files into
+            the tab delimited format required for TranspoScope
+"""
+
 import os
 import sys
 
@@ -5,8 +14,12 @@ import pandas as pd
 
 
 def calculate_orientation(
-    index, clip_start, clip_end, target_start, target_end
-):
+    index: int,
+    clip_start: int,
+    clip_end: int,
+    target_start: int,
+    target_end: int,
+) -> str:
     """
     Calculate the orientation of the insertion. The clip start and end should
     be on either the left or the right of the target region depending on the
@@ -35,33 +48,59 @@ def calculate_orientation(
 
 
 def load_repred(filepath: str) -> pd.DataFrame:
-    df_repred = pd.read_table(filepath)
-    return df_repred
+    """Load repred file into a pandas dataframe
+
+    :param filepath:  Path to the .repred file
+    :type  filepath:  str
+
+    :return:  A dataframe of the .repred file
+    :rtype :  pandas.DataFrame
+
+    :raise e:  File not found exception
+    """
+    repred_df = pd.read_csv(filepath, sep="\t")
+    return repred_df
 
 
 def validate_repred(repred_df: pd.DataFrame) -> bool:
+    """Simple validation of repred file
+        Ensures that Clipping Chromosome Matches Target Chromosome
+
+    :param repred_df:  Dataframe representation of a .repred file
+    :type  repred_df:  Pandas.DataFrame
+
+    :return:  Whether the tests pass
+    :rtype :  bool
+    """
     mismatches = repred_df[
         repred_df.apply(lambda x: x["H1_ClipChr"] != x["H5_TargChr"], axis=1)
     ].index.values
-    index_offset = 2
-    print(mismatches + index_offset)
-    if len(mismatches) > 0:
+    if mismatches:
         raise ValueError(
             "In row(s) {} the clipping chromosome does not "
             "match the target chromosome.".format(mismatches + 2)
         )
     return True
-    # TODO - add tests to make sure that coordinates are numbers, etc
 
 
-def add_orientation(df: pd.DataFrame) -> pd.DataFrame:
-    df["strand"] = df.apply(
+def add_orientation(repred_df: pd.DataFrame) -> pd.DataFrame:
+    """Add orientation to the table.
+        Orientation is calculated by comparing where the clipping center
+        (ClipS + ClipE)/2 lies relative to the Target center (TargS + TargE)/2
+
+    :param repred_df:  Dataframe representation of a .repred file
+    :type  repred_df:  Pandas.DataFrame
+
+    :return:  Modified dataframe which includes the orientation
+    :rtype :  Pandas.DataFrame
+    """
+    repred_df["strand"] = repred_df.apply(
         lambda x: calculate_orientation(
             x.name, x.H2_ClipS, x.H3_ClipE, x.H6_TargS, x.H7_TargE
         ),
         axis=1,
     )
-    return df
+    return repred_df
 
 
 def convert_dataframe(repred_dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -108,32 +147,39 @@ def convert_dataframe(repred_dataframe: pd.DataFrame) -> pd.DataFrame:
             "enzyme_cut_sites",
         ]
     ]
-    # TODO : check that 160 is the correct distance for the primer
+
     transcposcope_df["me_start"] = 6064 - 160
     transcposcope_df["me_end"] = 6064
     return transcposcope_df
 
 
-def main(filepath, only_gold_standard=False):
+def main(filepath: str, output_path: str):
+    """Main method for TIPseqHunter parser
+
+    :param filepath:  Path to the input .repred file
+    :type  filepath:  str
+
+    :param path:  output path
+    :type  path:  str
+    """
+
     file_name = filepath.split("/")[-1].split(".")[0]
-    df = load_repred(filepath)
-    if validate_repred(df):
+    repred_df = load_repred(filepath)
+    if validate_repred(repred_df):
         print("Repred is valid")
-    if not os.path.exists("output/insertion_tables"):
-        os.mkdir("output/insertion_tables")
 
-    df = convert_dataframe(df)
+    repred_df = convert_dataframe(repred_df)
 
-    df.to_csv(
-        "output/insertion_tables/{}.tab".format(file_name),
-        sep="\t",
-        index=False,
+    repred_df.sort_values(by=["chromosome"]).to_csv(
+        "{}/{}.tab".format(output_path, file_name), sep="\t", index=False
     )
+    print("Created file path:\n{}/{}.tab".format(output_path, file_name))
 
 
 if __name__ == "__main__":
-    filename = sys.argv[1] if len(sys.argv) > 1 else None
+    FILENAME = sys.argv[1] if len(sys.argv) in [2, 3] else None
+    # path = sys.argv[2] if len(sys.argv) == 3 else os.getcwd()
+    PATH = os.getcwd()
 
-    print(filename)
-    if filename:
-        main(filename)
+    if FILENAME:
+        main(FILENAME, PATH)

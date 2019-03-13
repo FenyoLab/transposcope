@@ -3,10 +3,15 @@ from collections import defaultdict
 from functools import reduce
 
 import pysam
+import os
 
 
 class BamHandler:
     def __init__(self, bam_file_location):
+        if not os.path.exists(bam_file_location):
+            raise SystemExit(
+                "\n\nERROR: BAM file not found '{}'".format(bam_file_location)
+            )
         self.BAM_FILE = pysam.AlignmentFile(bam_file_location, "rb")
         self.num_reads_in_bam = reduce(
             lambda x, y: x + y,
@@ -38,8 +43,8 @@ class BamHandler:
             completed += 1
             if completed > next_log:
                 logging.info(
-                    "Percentage of BAM file processed: {:.2%}.".format(
-                        next_log / self.num_reads_in_bam
+                    "   - Percentage of BAM file processed: {:.2%}.".format(
+                        completed / self.num_reads_in_bam
                     )
                 )
                 next_log += ten_percent

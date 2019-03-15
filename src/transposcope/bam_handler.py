@@ -8,10 +8,7 @@ import os
 
 class BamHandler:
     def __init__(self, bam_file_location):
-        if not os.path.exists(bam_file_location):
-            raise SystemExit(
-                "\n\nERROR: BAM file not found '{}'".format(bam_file_location)
-            )
+
         self.BAM_FILE = pysam.AlignmentFile(bam_file_location, "rb")
         self.num_reads_in_bam = reduce(
             lambda x, y: x + y,

@@ -6,20 +6,6 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 class FastaHandler:
     def __init__(self, line1_reference_path, reference_genome_folder_path):
-        if not os.path.exists(line1_reference_path):
-            raise SystemExit(
-                "\n\nERROR: Mobile Element FASTA file not found '{}'".format(
-                    line1_reference_path
-                )
-            )
-        if not os.path.exists(reference_genome_folder_path):
-            raise SystemExit(
-                "\n\nERROR: Reference genome folder not found '{}'".format(
-                    reference_genome_folder_path
-                )
-            )
-        # self.LINE1_START = int(line1_start)
-        # self.LINE1_END = int(line1_end)
         self._reference_genome_seq = None
         self._reference_genome_folder_path = reference_genome_folder_path
         self._current_chromosome = None

@@ -12,7 +12,7 @@ import transposcope.transposcope as ts
 import transposcope.viewer.server as server
 
 
-def transposcope_entry():
+def main():
     """Description
 
     @param param:  Description
@@ -117,4 +117,4 @@ def transposcope_entry():
 
 
 if __name__ == "__main__":
-    transposcope_entry()
+    main()

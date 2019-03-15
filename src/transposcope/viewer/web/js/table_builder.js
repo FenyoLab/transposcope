@@ -24,9 +24,24 @@
 //});
 //});
 
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+        vars[key] = value.split("#")[0];
+    });
+    return vars;
+}
+
+if (location.search == '') {
+    window.location.replace("home.html");
+}
+var area = getUrlVars()["area"];
+var patientFolder = getUrlVars()["patientFolder"];
+var type = getUrlVars()["type"];
+
 function buildTable(table) {
     "use strict";
-    console.log('table', table);
+    
     var i = "",
         j = "",
         oldTable = "",
@@ -34,7 +49,9 @@ function buildTable(table) {
         thead = "",
         tbody = "",
         tr = "",
-        td = "";
+        td = "",
+        this_href = window.location.hostname,
+        this_folder = window.location.pathname.split('/')[1];
     oldTable = document.getElementById('data_table');
     newTable = oldTable.cloneNode();
     thead = document.createElement('thead');
@@ -81,7 +98,8 @@ function buildTable(table) {
         var temp = table.data[i][0].split('-');
         var chr = temp[0];
         var pos = temp[1].split('(')[0];
-        a.href = "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&hubUrl=http://openslice.fenyolab.org/tracks/tipseq/hub-ovarian.txt&position="+chr+":"+(parseInt(pos,10)-1000)+"-"+(parseInt(pos,10)+1000);
+        // a.href = "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&hubUrl=http://openslice.fenyolab.org/tracks/tipseq/hub-ovarian.txt&position="+chr+":"+(parseInt(pos,10)-1000)+"-"+(parseInt(pos,10)+1000);
+        a.href = "http://genome.ucsc.edu/cgi-bin/hgTracks?db=hubUrl=https://${this_href}/${this_folder}/tracks/${area}/${patientFolder}/${type}/hub.bb&position="+chr+":"+(parseInt(pos,10)-1000)+"-"+(parseInt(pos,10)+1000);
         a.target = "_blank";
         td.appendChild(a);
         tr.appendChild(td);

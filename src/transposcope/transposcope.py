@@ -54,9 +54,7 @@ def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
         logging.basicConfig(level=default_level)
 
 
-def create_output_folder_structure(
-    output_folder_path, group1, group2, sample_id
-):
+def create_output_folder_structure(output_folder_path, group1, group2, sample_id):
 
     reference_path = os.path.join(
         output_folder_path,
@@ -66,17 +64,19 @@ def create_output_folder_structure(
         "{}".format(sample_id),
     )
 
+    track_path = os.path.join(
+        "web", "track", "{}".format(group1), "{}".format(group2), "{}".format(sample_id)
+    )
+
     transposcope_path = os.path.join(
-        "web",
-        "json",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
+        "web", "json", "{}".format(group1), "{}".format(group2), "{}".format(sample_id)
     )
     if os.path.exists(reference_path):
         shutil.rmtree(reference_path)
     if os.path.exists(transposcope_path):
         shutil.rmtree(transposcope_path)
+    if os.path.exists(track_path):
+        shutil.rmtree(track_path)
 
     web_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "viewer/web.zip"
@@ -85,11 +85,12 @@ def create_output_folder_structure(
 
     os.makedirs(reference_path)
     os.makedirs(transposcope_path)
+    os.makedirs(track_path)
     os.mkdir(os.path.join(reference_path, "fasta"))
     os.mkdir(os.path.join(reference_path, "fastq"))
     os.mkdir(os.path.join(reference_path, "sam"))
 
-    return reference_path, transposcope_path
+    return reference_path, transposcope_path, track_path
 
 
 def build_tree(path):
@@ -123,34 +124,24 @@ def main(args):
     #  - eg : pos, unlabeled - pos - negative, pos
     # TODO - make the reference subdirectories using the writer class
     output_folder_path = os.path.join(os.getcwd(), "output")
-    (reference_path, transposcope_path) = create_output_folder_structure(
-        output_folder_path,
-        # reference_type,
-        group1,
-        group2,
-        sample_id,
+    (reference_path, transposcope_path, track_path) = create_output_folder_structure(
+        output_folder_path, group1, group2, sample_id
     )
 
     setup_logging()
     logging.info("***  TranspoScope ***")
     logging.info("### Input ###")
-    logging.info(
-        " - Index File Path: {}".format(os.path.abspath(insertion_list_path))
-    )
+    logging.info(" - Index File Path: {}".format(os.path.abspath(insertion_list_path)))
     logging.info(" - BAM File Path: {}".format(os.path.abspath(bam_path)))
     logging.info(
-        " - Mobile Element Reference File Path: {}".format(
-            os.path.abspath(me_ref_path)
-        )
+        " - Mobile Element Reference File Path: {}".format(os.path.abspath(me_ref_path))
     )
     logging.info(
         " - Host Genome Folder Path: {}".format(os.path.abspath(host_ref_path))
     )
     logging.info(
         " - refFlat.txt Path: {}".format(
-            os.path.abspath(genes_file_path)
-            if genes_file_path
-            else "undefined"
+            os.path.abspath(genes_file_path) if genes_file_path else "undefined"
         )
     )
 
@@ -194,9 +185,7 @@ def main(args):
     completed = 0
     for insertion in insertions:
         file_name = "{i.CHROMOSOME}_{i.START}-{i.END}".format(i=insertion)
-        insertion.fasta_string = fasta_handler.generate_fasta_sequence(
-            insertion
-        )
+        insertion.fasta_string = fasta_handler.generate_fasta_sequence(insertion)
 
         fasta_path = file_writer.write_fasta(
             reference_path,
@@ -229,9 +218,7 @@ def main(args):
             end = "5"
         heading_table["data"].append(
             [
-                "{}-{}({})".format(
-                    insertion.CHROMOSOME, insertion.CLIP_START, end
-                ),
+                "{}-{}({})".format(insertion.CHROMOSOME, insertion.CLIP_START, end),
                 gene_info,
                 "{:.2f}".format(insertion.PRED),
             ]
@@ -246,17 +233,20 @@ def main(args):
                 )
             )
             next_log += ten_percent
-    #     TODO - write out bedfile
     #     TODO - write out index file
     logging.info("    --- DONE ---")
     if not keep_files:
         logging.info("### Cleanup ###")
-        logging.info(
-            "Cleaning up generated files in {}".format(reference_path)
-        )
+        logging.info("Cleaning up generated files in {}".format(reference_path))
         if os.path.exists(reference_path):
             shutil.rmtree(os.path.dirname(reference_path))
         logging.info("    --- DONE ---")
+
+    logging.info("### Building Bed File ###")
+    with open(os.path.join(track_path, '{}.bb'.format(sample_id)), 'w') as fh:
+        for insertion in insertions:
+            fh.write('{}\t{}\t{}\n'.format(insertion.CHROMOSOME, insertion.CLIP_START, insertion.CLIP_END))
+    logging.info("    --- DONE ---")
     logging.info("### Building Website ###")
 
     web_dir = os.path.join(os.getcwd(), "web")
@@ -264,8 +254,7 @@ def main(args):
     logging.info(" The website is being built into: {}".format(web_dir))
 
     file_writer.write_json(
-        os.path.join(transposcope_path, "table_info.json.gz.txt"),
-        heading_table,
+        os.path.join(transposcope_path, "table_info.json.gz.txt"), heading_table
     )
 
     tree, found_table = build_tree(os.path.join(web_dir, "json"))

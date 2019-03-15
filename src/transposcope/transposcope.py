@@ -54,7 +54,9 @@ def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
         logging.basicConfig(level=default_level)
 
 
-def create_output_folder_structure(output_folder_path, group1, group2, sample_id):
+def create_output_folder_structure(
+    output_folder_path, group1, group2, sample_id
+):
 
     reference_path = os.path.join(
         output_folder_path,
@@ -65,11 +67,19 @@ def create_output_folder_structure(output_folder_path, group1, group2, sample_id
     )
 
     track_path = os.path.join(
-        "web", "track", "{}".format(group1), "{}".format(group2), "{}".format(sample_id)
+        "web",
+        "track",
+        "{}".format(group1),
+        "{}".format(group2),
+        "{}".format(sample_id),
     )
 
     transposcope_path = os.path.join(
-        "web", "json", "{}".format(group1), "{}".format(group2), "{}".format(sample_id)
+        "web",
+        "json",
+        "{}".format(group1),
+        "{}".format(group2),
+        "{}".format(sample_id),
     )
     if os.path.exists(reference_path):
         shutil.rmtree(reference_path)
@@ -108,6 +118,45 @@ def build_tree(path):
     return dir_dict, found_table_info
 
 
+def check_paths(
+    line1_reference_path,
+    reference_genome_folder_path,
+    bam_file_location,
+    insertion_sites_file_path,
+    genes_path,
+):
+    if not os.path.exists(line1_reference_path):
+        raise SystemExit(
+            "\n\nERROR: Mobile Element FASTA file not found '{}'".format(
+                line1_reference_path
+            )
+        )
+    if not os.path.exists(reference_genome_folder_path):
+        raise SystemExit(
+            "\n\nERROR: Reference genome folder not found '{}'".format(
+                reference_genome_folder_path
+            )
+        )
+    if not os.path.exists(bam_file_location):
+        raise SystemExit(
+            "\n\nERROR: BAM file not found '{}'".format(bam_file_location)
+        )
+    if not os.path.exists(insertion_sites_file_path):
+        raise SystemExit(
+            "\n\nERROR: Insertion sites file path invalid: {}".format(
+                insertion_sites_file_path
+            )
+        )
+
+    if genes_path:
+        if not os.path.exists(insertion_sites_file_path):
+            raise SystemExit(
+                "\n\nERROR: refFlat.txt path invalid: {}".format(
+                    insertion_sites_file_path
+                )
+            )
+
+
 def main(args):
     group1 = args.group1
     group2 = args.group2
@@ -123,25 +172,42 @@ def main(args):
     # TODO - allow for multiple labels
     #  - eg : pos, unlabeled - pos - negative, pos
     # TODO - make the reference subdirectories using the writer class
+    check_paths(
+        me_ref_path,
+        host_ref_path,
+        bam_path,
+        insertion_list_path,
+        genes_file_path,
+    )
     output_folder_path = os.path.join(os.getcwd(), "output")
-    (reference_path, transposcope_path, track_path) = create_output_folder_structure(
+    (
+        reference_path,
+        transposcope_path,
+        track_path,
+    ) = create_output_folder_structure(
         output_folder_path, group1, group2, sample_id
     )
 
     setup_logging()
     logging.info("***  TranspoScope ***")
     logging.info("### Input ###")
-    logging.info(" - Index File Path: {}".format(os.path.abspath(insertion_list_path)))
+    logging.info(
+        " - Index File Path: {}".format(os.path.abspath(insertion_list_path))
+    )
     logging.info(" - BAM File Path: {}".format(os.path.abspath(bam_path)))
     logging.info(
-        " - Mobile Element Reference File Path: {}".format(os.path.abspath(me_ref_path))
+        " - Mobile Element Reference File Path: {}".format(
+            os.path.abspath(me_ref_path)
+        )
     )
     logging.info(
         " - Host Genome Folder Path: {}".format(os.path.abspath(host_ref_path))
     )
     logging.info(
         " - refFlat.txt Path: {}".format(
-            os.path.abspath(genes_file_path) if genes_file_path else "undefined"
+            os.path.abspath(genes_file_path)
+            if genes_file_path
+            else "undefined"
         )
     )
 
@@ -185,7 +251,9 @@ def main(args):
     completed = 0
     for insertion in insertions:
         file_name = "{i.CHROMOSOME}_{i.START}-{i.END}".format(i=insertion)
-        insertion.fasta_string = fasta_handler.generate_fasta_sequence(insertion)
+        insertion.fasta_string = fasta_handler.generate_fasta_sequence(
+            insertion
+        )
 
         fasta_path = file_writer.write_fasta(
             reference_path,
@@ -218,7 +286,9 @@ def main(args):
             end = "5"
         heading_table["data"].append(
             [
-                "{}-{}({})".format(insertion.CHROMOSOME, insertion.CLIP_START, end),
+                "{}-{}({})".format(
+                    insertion.CHROMOSOME, insertion.CLIP_START, end
+                ),
                 gene_info,
                 "{:.2f}".format(insertion.PRED),
             ]
@@ -237,15 +307,23 @@ def main(args):
     logging.info("    --- DONE ---")
     if not keep_files:
         logging.info("### Cleanup ###")
-        logging.info("Cleaning up generated files in {}".format(reference_path))
+        logging.info(
+            "Cleaning up generated files in {}".format(reference_path)
+        )
         if os.path.exists(reference_path):
             shutil.rmtree(os.path.dirname(reference_path))
         logging.info("    --- DONE ---")
 
     logging.info("### Building Bed File ###")
-    with open(os.path.join(track_path, '{}.bb'.format(sample_id)), 'w') as fh:
+    with open(os.path.join(track_path, "{}.bb".format(sample_id)), "w") as fh:
         for insertion in insertions:
-            fh.write('{}\t{}\t{}\n'.format(insertion.CHROMOSOME, insertion.CLIP_START, insertion.CLIP_END))
+            fh.write(
+                "{}\t{}\t{}\n".format(
+                    insertion.CHROMOSOME,
+                    insertion.CLIP_START,
+                    insertion.CLIP_END,
+                )
+            )
     logging.info("    --- DONE ---")
     logging.info("### Building Website ###")
 
@@ -254,7 +332,8 @@ def main(args):
     logging.info(" The website is being built into: {}".format(web_dir))
 
     file_writer.write_json(
-        os.path.join(transposcope_path, "table_info.json.gz.txt"), heading_table
+        os.path.join(transposcope_path, "table_info.json.gz.txt"),
+        heading_table,
     )
 
     tree, found_table = build_tree(os.path.join(web_dir, "json"))

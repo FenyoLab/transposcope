@@ -39,15 +39,7 @@ class InsertionSiteReader:
                 "floats": ["pred"],
                 "bools": ["three_prime_end"],
             }
-        try:
-            self.insertion_sites_file = open(insertion_sites_file_path, "r")
-        except IOError:
-            print(
-                "\n\nERROR: Insertion sites file path invalid: {}".format(
-                    insertion_sites_file_path
-                )
-            )
-            raise SystemExit()
+        self.insertion_sites_file = open(insertion_sites_file_path, "r")
         self.header = header
         self.all_headers = (
             self.insertion_sites_file.readline().strip().split("\t")

@@ -14,12 +14,7 @@ class TestFastaHandler(TestCase):
         with mock.patch(
             "builtins.open", return_value=fake_line1_fasta_file, create=True
         ):
-            self.fasta_handler = FastaHandler(
-                "filename",
-                "/",
-                # 72,
-                # 80
-            )
+            self.fasta_handler = FastaHandler("filename", "/")
         fake_reference_genome_fasta_file = StringIO(
             ">FASTA_FILE\nGGGGCCCCGGGGCCCC", newline="\n"
         )

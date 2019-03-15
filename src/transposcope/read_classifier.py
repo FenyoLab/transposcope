@@ -94,8 +94,6 @@ class ReadClassifier:
         # logging.info("-" * len(h))
         # self.printed_header = True
 
-        # min_l1 = self.L1_REF_SEQ_START
-        # max_l1 = self.L1_REF_SEQ_END
         min_l1 = insertion.LINE1_START
         max_l1 = insertion.LINE1_END
         min_g = insertion.START

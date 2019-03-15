@@ -8,8 +8,8 @@ Description: Command line parser which runs relative TranspoScope
 """
 
 import argparse
-import transposcope.transposcope as ts
-import transposcope.viewer.server as server
+import transposcope as ts
+import viewer.server as server
 
 
 def main():

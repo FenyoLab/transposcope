@@ -13,25 +13,15 @@ import logging.config
 import os
 import shutil
 
-from transposcope.bam_handler import BamHandler
-from transposcope.fasta_handler import FastaHandler
-from transposcope.file_writer import FileWriter
-from transposcope.gene_handler import GeneHandler
-from transposcope.insertion import Insertion
-from transposcope.insertion_sites_reader import InsertionSiteReader
-from transposcope.read_classifier import ReadClassifier
-from transposcope.reads_dict import ReadsDict
-from transposcope.realigner import Realigner
-
-
-# from memory_profiler import profile
-
-
-# def get_config_from_file():
-# with open("./config/config_hg19.json") as json_data_file:
-# # with open('./config/config.json') as json_data_file:
-# data = json.load(json_data_file)
-# return data
+from bam_handler import BamHandler
+from fasta_handler import FastaHandler
+from file_writer import FileWriter
+from gene_handler import GeneHandler
+from insertion import Insertion
+from insertion_sites_reader import InsertionSiteReader
+from read_classifier import ReadClassifier
+from reads_dict import ReadsDict
+from realigner import Realigner
 
 
 def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):

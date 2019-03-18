@@ -19,4 +19,13 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: Unix",
     ],
+    entry_points={
+        'console_scripts': ['transposcope = transposcope.cli:main']
+    },
+    install_requires=[
+        'pandas',
+        'numpy',
+        'pysam',
+    ],
+
 )

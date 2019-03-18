@@ -3,7 +3,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-files = ["web/web.zip"]
+files = ["web/web.zip", 'config/logging.json']
 
 setuptools.setup(
     name="transposcope",

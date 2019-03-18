@@ -1,0 +1,25 @@
+{
+  "line1":{
+    "fasta":"/media/mark/Data/transposcope/reference/Homo_sapiens_L1.L1HS.fa",
+    "start":"5064",
+    "end":"6064",
+    "db":"write-math"
+  },
+  "input":{
+    "bam":"/media/mark/Data/transposcope/somatic_insertion_finder/bams/",
+    "insertion_table_dir":"/home/mark/projects/fenyolab/transposcope/output/insertion_tables/",
+    "label":"positive"
+  },
+  "reference":{
+    "hg":"/media/mark/Data/transposcope/reference/hg19/",
+    "refFlat":"/media/mark/Data/transposcope/reference/refFlat.txt"
+  },
+  "output":{
+    "root": "./output",
+    "removeAlignmentFiles": "N"
+  },
+  "bowtie":{
+    "fastaIndexed": "~/projects/fenyolab/transposcope/shell_scripts/runBowtie2v223BuildIndex.sh",
+    "realign": "~/projects/fenyolab/transposcope/shell_scripts/runBowtie2v223PE.sh"
+  }
+}

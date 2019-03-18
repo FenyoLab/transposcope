@@ -25,7 +25,6 @@ setuptools.setup(
     install_requires=[
         'pandas',
         'numpy',
-        'pysam',
     ],
 
 )

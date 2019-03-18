@@ -1,2 +1,0 @@
-recursive-include transposcope/web/web.zip
-recursive-include transposcope/config/logging.json

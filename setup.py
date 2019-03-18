@@ -12,7 +12,6 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/FenyoLab/transposcope",
-    packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "Licencse :: OSI Approved :: MIT License",
@@ -22,9 +21,5 @@ setuptools.setup(
     entry_points={
         'console_scripts': ['transposcope = transposcope.cli:main']
     },
-    install_requires=[
-        'pandas',
-        'numpy',
-    ],
 
 )

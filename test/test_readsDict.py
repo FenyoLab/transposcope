@@ -1,7 +1,7 @@
 from collections import namedtuple
 from unittest import TestCase
 
-from transposcope_pkg.reads_dict import ReadsDict
+from transposcope.reads_dict import ReadsDict
 
 Read = namedtuple("Read", ["query_name", "is_read1", "is_read2", "flag"])
 

@@ -8,7 +8,7 @@ Description: Command line parser which runs relative TranspoScope
 """
 
 import argparse
-import transposcope.main as ts
+import transposcope.driver as ts
 import transposcope.viewer.server as server
 
 

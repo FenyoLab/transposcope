@@ -13,15 +13,15 @@ import logging.config
 import os
 import shutil
 
-from transposcope.bam_handler import BamHandler
-from transposcope.fasta_handler import FastaHandler
-from transposcope.file_writer import FileWriter
-from transposcope.gene_handler import GeneHandler
-from transposcope.insertion import Insertion
-from transposcope.insertion_sites_reader import InsertionSiteReader
-from transposcope.read_classifier import ReadClassifier
-from transposcope.reads_dict import ReadsDict
-from transposcope.realigner import Realigner
+from transposcope_pkg.bam_handler import BamHandler
+from transposcope_pkg.fasta_handler import FastaHandler
+from transposcope_pkg.file_writer import FileWriter
+from transposcope_pkg.gene_handler import GeneHandler
+from transposcope_pkg.insertion import Insertion
+from transposcope_pkg.insertion_sites_reader import InsertionSiteReader
+from transposcope_pkg.read_classifier import ReadClassifier
+from transposcope_pkg.reads_dict import ReadsDict
+from transposcope_pkg.realigner import Realigner
 
 
 def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):

@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest import mock
 
-from transposcope_pkg.insertion_sites_reader import InsertionSiteReader
+from transposcope.insertion_sites_reader import InsertionSiteReader
 
 
 class TestRepredReader(TestCase):

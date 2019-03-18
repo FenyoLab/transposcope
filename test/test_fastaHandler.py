@@ -2,8 +2,8 @@ from io import StringIO
 from unittest import TestCase
 from unittest import mock
 
-from transposcope_pkg.fasta_handler import FastaHandler
-from transposcope_pkg.insertion import Insertion
+from transposcope.fasta_handler import FastaHandler
+from transposcope.insertion import Insertion
 
 
 class TestFastaHandler(TestCase):

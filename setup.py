@@ -3,7 +3,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-files=['web/web.zip', 'config/logging.json']
+files = ["web/web.zip", "config/logging.json"]
 
 setuptools.setup(
     name="transposcope",
@@ -15,15 +15,12 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/FenyoLab/transposcope",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
         "Licencse :: OSI Approved :: MIT License",
         "Operating System :: MacOS",
         "Operating System :: Unix",
     ],
-    packages=['transposcope', 'transposcope.viewer'],
-    package_data = {'transposcope' : files },
-    entry_points={
-        'console_scripts': ['transposcope = transposcope.cli:main']
-    },
-
+    packages=["transposcope", "transposcope.viewer"],
+    package_data={"transposcope": files},
+    entry_points={"console_scripts": ["transposcope = transposcope.cli:main"]},
 )

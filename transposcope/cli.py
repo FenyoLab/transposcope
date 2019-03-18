@@ -9,10 +9,8 @@ Description: Command line parser which runs relative TranspoScope
 
 import argparse
 
-# import transposcope.viewer.server as server
-# import transposcope.driver as ts
-import driver as ts
-from .viewer import server
+import transposcope.viewer.server as server
+import transposcope.driver as ts
 
 
 def main():

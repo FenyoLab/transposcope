@@ -79,7 +79,7 @@ def create_output_folder_structure(
         shutil.rmtree(track_path)
 
     web_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "viewer/web.zip"
+        os.path.dirname(os.path.realpath(__file__)), "web/web.zip"
     )
     shutil.unpack_archive(web_path)
 

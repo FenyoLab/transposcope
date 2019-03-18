@@ -3,6 +3,8 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+files = ["web/web.zip"]
+
 setuptools.setup(
     name="transposcope",
     version="0.1.0",
@@ -19,6 +21,7 @@ setuptools.setup(
         "Operating System :: Unix",
     ],
     packages=['transposcope', 'transposcope.viewer'],
+    package_data = {'transposcope' : files },
     entry_points={
         'console_scripts': ['transposcope = transposcope.cli:main']
     },

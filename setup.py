@@ -18,7 +18,7 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: Unix",
     ],
-    packages=['transposcope', ],
+    packages=['transposcope', 'transposcope.viewer'],
     entry_points={
         'console_scripts': ['transposcope = transposcope.cli:main']
     },

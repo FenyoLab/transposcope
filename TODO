@@ -1,6 +1,0 @@
-1.
-	1.1 Write a more comprehensive README for github
-	1.2 Set up an example github pages which hosts some example insertions
-2. Set up bump version
-3. Create a setup script
-4. Package TranspoScope on bioconda

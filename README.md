@@ -41,7 +41,30 @@ transposcope align --help
 transposcope view path/to/alignment/output/web
 ```
 
-### Notes
+### Publishing Plots to GitHub
 
-### Troubleshooting
+1. Create a new repository on GitHub.
+https://help.github.com/en/articles/creating-a-new-repository
+
+2. Initialize git in the web folder output from the align step.
+```console
+cd <path/to/alignment/output/web>
+git init
+git add .
+git commit -m 'commiting generated plots'
+```
+
+3. Link the Github repository created in **step 1** to your local git folder
+```console
+git remote add origin <<https://github.com/user/repo.git>>
+```
+
+4. Push the local folder to Github
+```console
+git push
+```
+
+5. Set up GitHub pages to view the output
+https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages#enabling-github-pages-to-publish-your-site-from-master-or-gh-pages
+
 

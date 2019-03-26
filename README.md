@@ -18,16 +18,19 @@ Alternatively, transposcope can be installed into the current conda environment 
 ```console
 conda install transposcope
 ```
+## General Use
 ### Generating Plots
 
 ```console
 transposcope align <index> <bam> <me_reference> <host_reference> <sample_id>
 ```
-input:          Input table
-bam:            Bam file containing reads
-me_reference:   The reference sequence of the mobile element being evaluated
-host_reference: A folder containing the reference sequences for the host genome chromosomes E.G. HG38/
-sample_id:      Unique identifier for the output to avoid overwriting previous output
+| Input | Discription |
+|-|-|
+|index         | Index table|
+|bam           | Bam file containing reads|
+|me_reference  | The reference sequence of the mobile element being evaluated|
+|host_reference| A folder containing the reference sequences for the host genome chromosomes E.G. HG38/|
+|sample_id     | Unique identifier for the output to avoid overwriting previous output|
 
 
 There are additional optional parameters which can be viewed by passing the help flag.
@@ -67,4 +70,20 @@ git push
 5. Set up GitHub pages to view the output
 https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages#enabling-github-pages-to-publish-your-site-from-master-or-gh-pages
 
+## Notes
+### Index Table
+The index table is a tab delimited file which defines attributes associated with each potential insertion. Each row outlines an insertion through eleven variables.
 
+|Attribute | Meaning|
+| - | - |
+|chromosome        |The chromosome in which the insertion is located|
+|target_start      |The start coordinate of the region flanking the insertion|
+|target_end        |The end coordinate of the region flanking the insertion|
+|clip_start        |The coordinate where reads begin to be soft clipped due to the insertion|
+|clip_end          |The coordinate where the mobile element sequence begins|
+|strand            |Whether the mobile element should be reverse complemented|
+|pred              |The predicted confidence of the insertion being real|
+|three_prime_end   |True when the target region flanks the 3' end of the mobile element, false when it flanks the 5' end|
+|enzyme_cut_sites  |The coordinates of enzyme cut sites to be shown in the visualization and uses the following structure description-offset_from_insertion_site. Multiple sites are delimited using a ':'|
+|me_start          |The start coordinate of the mobile element in relation of its reference sequence (5094 for TIPseq)|
+|me_end            |The end coordinate of the mobile element in relation of its reference sequence (6064 for TIPseq)|

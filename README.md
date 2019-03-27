@@ -70,6 +70,52 @@ git push
 5. Set up GitHub pages to view the output
 https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages#enabling-github-pages-to-publish-your-site-from-master-or-gh-pages
 
+### Example files
+A zip archive containing example files can be downloaded from the following link [example.tar.gz](https://github.com/FenyoLab/transposcope/files/3013885/example.tar.gz)
+
+```
+example
+├── bam
+│   ├── example.bam
+│   └── example.bam.bai
+├── index_table.tab
+└── reference
+    ├── hg19
+    │   └── chr22.fa
+    ├── Homo_sapiens_L1.L1HS.fa
+    └── Homo_sapiens_L1.L1HS.fa.fai
+```
+| Filename | Description |
+|-|-|
+|index_table.tab| Defines the regions flanking the insertions|
+|/reference/Homo_sapiens_L1.L1HS.fa| reference sequence for the mobile element|
+|/reference/Homo_sapiens_L1.L1HS.fa.fai| FASTA index file|
+|/reference/hg19/chr22.fa| This example only contains insertions in chromosome 22|
+|/bam/example.bam| bam file containing reads aligned to the hg19 reference genome|
+|/bam/example.bam.bai| BAM index file|
+
+---
+
+To run TranspoScope using the example files, first install TranspoScope. Next, download the example archive and navigate to the directory in which the file was downloaded, then:
+
+1. Extract the files
+```console
+tar -zxvf example.tar.gz
+```
+2. Navigate to the extracted directory
+```console
+cd example
+```
+3. Run TranspoScope align
+```console
+transposcope align index_table.tab bam/example.bam reference/Homo_sapiens_L1.L1HS.fa reference/hg19/ example
+```
+4. Two folders will be created, 'output' and 'web'. To view the coverage using the viewer run:
+```console
+transposcope view web
+```
+5. To stop the viewer press ctrl+c when the terminal window is selected
+
 ## Notes
 ### Index Table
 The index table is a tab delimited file which defines attributes associated with each potential insertion. Each row outlines an insertion through eleven variables.

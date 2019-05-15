@@ -64,7 +64,7 @@ git remote add origin <<https://github.com/user/repo.git>>
 
 4. Push the local folder to Github
 ```console
-git push
+git push origin master
 ```
 
 5. Set up GitHub pages to view the output

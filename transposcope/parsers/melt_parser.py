@@ -188,7 +188,7 @@ def main(filepath):
     _, header = parse_meta_info(file_handler)
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
-    with open("output/insertion_tables/{}.tab".format(file_name), "w") as file:
+    with open("./TS_{}.tab".format(file_name), "w") as file:
         for row in parsed_table:
             file.write("\t".join([str(x) for x in list(row)]) + "\n")
 

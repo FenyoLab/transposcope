@@ -7,6 +7,7 @@ Description: Parser which extracts relavant data from MELT vcf files and
              outputs a tab delimited file usable by TranspoScope.
 """
 
+import os
 import re
 import sys
 
@@ -113,7 +114,6 @@ def _find_strand(row_info):
     return name, start, end, polarity
 
 
-# TODO : rename this method
 def retrieve_required_data(extracted_vcf_data, target_width=1000):
     """Reformat the data from the vcf file into the format required by
     transposcope
@@ -146,7 +146,7 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
     ]
     for row_data in extracted_vcf_data:
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
-        assess = row_data['INFO']['ASSESS']
+        assess = row_data["INFO"]["ASSESS"]
         if strand_me == "null":
             # TODO - write a better format string
             print("WARNING - strand is not specified:", row_data)
@@ -183,17 +183,26 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
 
 
 def main(filepath):
+    """Main entry point for converting MELT output into TranspoScope input.
+
+    @param filepath:  Path to the MELT output file
+    @type  param:  str
+
+    @return:  None
+    @rtype :  None
+    """
     file_name = filepath.split("/")[-1].split(".")[0]
     file_handler = load_vcf(filepath)
     _, header = parse_meta_info(file_handler)
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
-    with open("output/insertion_tables/{}.tab".format(file_name), "w") as file:
+    with open("TS_{}.tab".format(file_name), "w") as file:
         for row in parsed_table:
             file.write("\t".join([str(x) for x in list(row)]) + "\n")
+    print("Created input file:\nTS_{}.tab".format(file_name))
 
 
 if __name__ == "__main__":
-    filename = sys.argv[1] if len(sys.argv) > 1 else None
-    if filename:
-        main(filename)
+    FILENAME = sys.argv[1] if len(sys.argv) > 1 else None
+    if FILENAME:
+        main(FILENAME)

@@ -153,7 +153,7 @@ def convert_dataframe(repred_dataframe: pd.DataFrame) -> pd.DataFrame:
     return transcposcope_df
 
 
-def main(filepath: str, output_path: str):
+def main(filepath: str):
     """Main method for TIPseqHunter parser
 
     :param filepath:  Path to the input .repred file
@@ -169,11 +169,10 @@ def main(filepath: str, output_path: str):
         print("Repred is valid")
 
     repred_df = convert_dataframe(repred_df)
-
     repred_df.sort_values(by=["chromosome"]).to_csv(
-        "{}/{}.tab".format(output_path, file_name), sep="\t", index=False
+        "TS_{}.tab".format(file_name), sep="\t", index=False
     )
-    print("Created file path:\n{}/{}.tab".format(output_path, file_name))
+    print("Created input file:\nTS_{}.tab".format(file_name))
 
 
 if __name__ == "__main__":

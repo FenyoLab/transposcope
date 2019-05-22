@@ -11,6 +11,7 @@ import argparse
 
 import transposcope.viewer.server as server
 import transposcope.driver as ts
+import transposcope.parsers.main as ip
 
 
 def main():
@@ -112,6 +113,7 @@ def main():
     input_parser.add_argument(
         "path", type=str, help="The path to the file to be parsed."
     )
+    input_parser.set_defaults(func=ip.main)
 
     args = parser.parse_args()
     args.func(args)

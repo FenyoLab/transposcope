@@ -7,7 +7,7 @@ files = ["web/web.zip", "config/logging.json"]
 
 setuptools.setup(
     name="transposcope",
-    version="0.1.0",
+    version="0.1.2",
     author="Mark Grivainis",
     author_email="mark.grivainis@fenyolab.org",
     description="A package for visualizing read coverage in areas surrounding novel mobile element insertions.",
@@ -20,7 +20,7 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: Unix",
     ],
-    packages=["transposcope", "transposcope.viewer"],
+    packages=["transposcope", "transposcope.viewer", "transposcope.parsers"],
     package_data={"transposcope": files},
     entry_points={"console_scripts": ["transposcope = transposcope.cli:main"]},
 )

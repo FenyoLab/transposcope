@@ -20,7 +20,6 @@ function getUrlVars() {
 if (location.search == '') {
     window.location.replace("home.html");
 }
-console.log(location.search)
 var area = getUrlVars()["area"];
 var patientFolder = getUrlVars()["patientFolder"];
 var type = getUrlVars()["type"];
@@ -359,7 +358,6 @@ function zoomReads() {
 
     var j_seq_each_g = j_seq_g.selectAll("text")
         .data(function (d) {
-            //            console.log(d);
             var domY = seqY.domain();
             return d.filter(function (c) {
                 if (domY[0] - 1 <= c.y && c.y < domY[1])
@@ -524,7 +522,7 @@ function zoomReads() {
         .text(function (d) {
             return d.s;
         });
-
+    console.log(datas);
     qwe.exit()
         .remove();
     svg.select("line.zero_line").attr("x1", x(datas['stats']['ClipS'] - 0.5)).attr("x2", x(datas['stats']['ClipS'] - 0.5));
@@ -955,9 +953,8 @@ function redraw(dat) {
 
 
     initialized = false;
-    console.log(dat)
     'use strict';
-    var counter = "",
+    var counter = 0,
         plot_idx = "",
         origin = "",
         bars = "",
@@ -965,7 +962,11 @@ function redraw(dat) {
         dataPerPixel = "",
         cuts = "",
         currentDomain = x.domain();
-    enzymeCuts = dat.info.enzyme_cut_sites.split(':');
+    enzymeCuts = dat.info.enzyme_cut_sites;
+    if (enzymeCuts !== "")
+    {
+      enzymeCuts = enzymeCuts.split(':');
+    }
     for (counter = 0; counter < enzymeCuts.length; counter += 1) {
         enzymeCuts[counter] = enzymeCuts[counter].split('-');
         if (dat.stats.complement === 1) {
@@ -984,10 +985,10 @@ function redraw(dat) {
                             dat.bins.g_rj.coverage, dat.bins.l_rj.coverage,
 
                             ];
-        L1_start = -160;
+        L1_start = -(dat.stats.l1_max - dat.stats.l1_min);
         t_genome_offset = 20;
         t_L1_offset = -70;
-        x.domain([-160, (dat.stats.bp_max - dat.stats.bp_min)]);
+        x.domain([L1_start, (dat.stats.bp_max - dat.stats.bp_min)]);
     } else {
         data = [dat.bins.g_gg.coverage, [{
                 'x': 0,
@@ -997,10 +998,10 @@ function redraw(dat) {
                             dat.bins.g_rj.coverage, dat.bins.l_rj.coverage,
 
                             ];
-        L1_start = 160;
+        L1_start = (dat.stats.l1_max - dat.stats.l1_min);
         t_genome_offset = -70;
         t_L1_offset = 20;
-        x.domain([(dat.stats.bp_min - dat.stats.bp_max), 160]);
+        x.domain([(dat.stats.bp_min - dat.stats.bp_max), L1_start]);
     }
 
     g_reads = datas['bins']['g_rj']['reads'].length
@@ -1557,13 +1558,11 @@ $(document).ready(function () {
         //        //jsonresponse = JSON.parse(response);
         //        // Assuming json data is wrapped in square brackets as Drew suggests
         buildTable(JSON.parse(response));
-        console.log(JSON.parse(response));
         $('#data_table tbody tr').click(function () {
             $('#data_table tbody tr').removeClass("factive");
             $(this).addClass("factive");
         });
         if (location.hash != '') {
-            console.log("asd");
             updateData(location.hash.substring(1));
         }
     }, "table_info");
@@ -1600,7 +1599,6 @@ function getCellValue(row, index) {
 
 function updateData(fileID) {
     'use strict';
-    console.log(fileID);
     //    svg.select("g.loader").attr("transform", "translate(-5000,0)");
 
     svg.select("g.loader")
@@ -1617,7 +1615,6 @@ function updateData(fileID) {
         .ease("cubic")
         .attr("transform", "translate(" + (width + margin.right + margin.left) + ",0)")
         .each("end", function () { // as seen above
-            console.log("here");
             svg.select("g.plot") // this is the object          // a new transition!
                 .attr("transform", "translate(" + (-width - margin.right - margin.left) + ",0)") // we could have had another
                 // .each("end" construct here.
@@ -1634,7 +1631,6 @@ var arc = d3.svg.arc()
     .startAngle(0);
 
 function loading(percent) {
-    console.log(percent);
     var lod = svg.select("g.loader").selectAll("path")
         .data([{
             endAngle: percent * 2 * Math.PI
@@ -1901,20 +1897,20 @@ svg.select("g.buttons")
     .on("click", showReads)
     .text("JUNCTION READS");
 
-svg.select("g.buttons")
-    .append("text")
-    .attr("class", "scatter")
-    .attr("x", width / 2 + 205)
-    .attr("y", -30)
-    .style("fill", "#455A64")
-    .style("font-size", "14px")
-    .style("font-weight", "bold")
-    .style("text-rendering", "geometricPrecision")
-    .on("click", function OpenInNewTab() {
-        var win = window.open('parameters.html' + '?area=' + area + '&patientFolder=' + patientFolder + '&type=' + type, '_blank');
-        win.focus();
-    })
-    .text("PARAMETERS");
+// svg.select("g.buttons")
+//     .append("text")
+//     .attr("class", "scatter")
+//     .attr("x", width / 2 + 205)
+//     .attr("y", -30)
+//     .style("fill", "#455A64")
+//     .style("font-size", "14px")
+//     .style("font-weight", "bold")
+//     .style("text-rendering", "geometricPrecision")
+//     .on("click", function OpenInNewTab() {
+//         var win = window.open('parameters.html' + '?area=' + area + '&patientFolder=' + patientFolder + '&type=' + type, '_blank');
+//         win.focus();
+//     })
+//     .text("PARAMETERS");
 
 svg.append("g")
     .attr("class", "bg");

@@ -1,6 +1,15 @@
 # TranspoScope
 ### A Tool for Interactive Visualization of Evidence of Retrotransposon Insertions
 
+#### Examples
+##### An example showing strong evidence of an insertion
+This example shows strong evidence as there are ~100 bridging reads where one read aligns to the reference sequence and the pair aligns to the LINE-1 reference.
+http://openslice.fenyolab.org/transposcope/transpoScope.html?area=pancreatic&patientFolder=A31&type=A31-Normal#chrX-81746649(1)
+
+##### An example showing little evidence of the insertion being real
+This example does not show much evidence of the insertion being real as there are only three bridging reads. In addition, many of the reads which match the LINE-1 reference sequence do not have a pair which matches the reference genome.
+http://openslice.fenyolab.org/transposcope/transpoScope.html?area=pancreatic&patientFolder=A31&type=A31-Normal#chr6-37876353(5)
+
 ## Installation instructions 
 
 ### Install and Configure Anaconda / Miniconda

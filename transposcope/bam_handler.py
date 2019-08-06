@@ -22,13 +22,23 @@ class BamHandler:
 
     def fetch_reads_in_region(self, insertion):
         reads = defaultdict(list)
-        for read in self.BAM_FILE.fetch(
-            reference=insertion.CHROMOSOME,
-            start=insertion.START,
-            end=insertion.END,
-        ):
-            if not read.flag & (0x800 | 0x100):
-                reads[read.query_name].insert(read.is_read2, read)
+        if insertion.target_5p:
+            for read in self.BAM_FILE.fetch(
+                reference=insertion.chromosome,
+                start=insertion.target_5p[0],
+                end=insertion.target_5p[1],
+            ):
+                if not read.flag & (0x800 | 0x100):
+                    reads[read.query_name].insert(read.is_read2, read)
+
+        if insertion.target_3p:
+            for read in self.BAM_FILE.fetch(
+                reference=insertion.chromosome,
+                start=insertion.target_5p[0],
+                end=insertion.target_5p[1],
+            ):
+                if not read.flag & (0x800 | 0x100):
+                    reads[read.query_name].insert(read.is_read2, read)
         return dict(reads)
 
     def all_reads(self):

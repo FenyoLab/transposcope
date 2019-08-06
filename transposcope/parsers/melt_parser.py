@@ -7,6 +7,7 @@ Description: Parser which extracts relavant data from MELT vcf files and
              outputs a tab delimited file usable by TranspoScope.
 """
 
+from collections import namedtuple
 import os
 import re
 import sys
@@ -129,56 +130,65 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
 
     @raise e:  Description
     """
-    formated_table = [
-        [
-            "chromosome",
-            "target_start",
-            "target_end",
-            "clip_start",
-            "clip_end",
-            "strand",
-            "pred",
-            "three_prime_end",
-            "enzyme_cut_sites",
-            "me_start",
-            "me_end",
-        ]
-    ]
+    formated_table = []
     for row_data in extracted_vcf_data:
+        # NOTE: The insertion starts at the base following POS
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
+
+        TSD = (
+            row_data["INFO"]["TSD"]
+            if row_data["INFO"]["TSD"] != "null"
+            else ""
+        )
+
         assess = row_data["INFO"]["ASSESS"]
         if strand_me == "null":
             # TODO - write a better format string
             print("WARNING - strand is not specified:", row_data)
         else:
-            result_1 = [
+            result = [
                 row_data["CHROM"],
-                int(row_data["POS"]) - target_width,
-                int(row_data["POS"]),
-                int(row_data["POS"]),
-                int(row_data["POS"]),
+                (
+                    int(row_data["POS"]) - target_width,  # 5' start
+                    int(row_data["POS"]),
+                ),  # 5' end
+                (
+                    int(row_data["POS"]),  # 3' start
+                    int(row_data["POS"]) + target_width,
+                ),  # 3' end
+                TSD,  # TSD
                 strand_me,
-                assess,
-                strand_me == "-",
-                "",
-                int(start_me) - 1,
-                int(end_me) + 1,
+                int(start_me),
+                int(end_me),
             ]
-            formated_table.append(result_1)
-            result_2 = [
-                row_data["CHROM"],
-                int(row_data["POS"]) + 1,
-                int(row_data["POS"]) + 1 + target_width,
-                int(row_data["POS"]) + 1,
-                int(row_data["POS"]) + 1,
-                strand_me,
-                assess,
-                strand_me != "-",
-                "",
-                int(start_me) - 1,
-                int(end_me) + 1,
-            ]
-            formated_table.append(result_2)
+            # result_1 = [
+            #     row_data["CHROM"],
+            #     int(row_data["POS"]) - target_width,
+            #     int(row_data["POS"]),
+            #     int(row_data["POS"]),
+            #     int(row_data["POS"]),
+            #     strand_me,
+            #     assess,
+            #     strand_me == "-",
+            #     "",
+            #     int(start_me) - 1,
+            #     int(end_me) + 1,
+            # ]
+            # formated_table.append(result_1)
+            # result_2 = [
+            #     row_data["CHROM"],
+            #     int(row_data["POS"]) + 1,
+            #     int(row_data["POS"]) + 1 + target_width,
+            #     int(row_data["POS"]) + 1,
+            #     int(row_data["POS"]) + 1,
+            #     strand_me,
+            #     assess,
+            #     strand_me != "-",
+            #     "",
+            #     int(start_me) - 1,
+            #     int(end_me) + 1,
+            # ]
+            formated_table.append(result)
     return formated_table
 
 
@@ -196,11 +206,25 @@ def main(filepath):
     _, header = parse_meta_info(file_handler)
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
+    row_tuple = namedtuple(
+        "insertion",
+        [
+            "chromosome",
+            "target_5p",
+            "target_3p",
+            "TSD",
+            "me_strand",
+            "me_start",
+            "me_end",
+        ],
+    )
+    for row in parsed_table[:10]:
+        yield row_tuple(*row)
 
-    with open("./TS_{}.tab".format(file_name), "w") as file:
-        for row in parsed_table:
-            file.write("\t".join([str(x) for x in list(row)]) + "\n")
-    print("Created input file:\nTS_{}.tab".format(file_name))
+    # with open("./TS_{}.tab".format(file_name), "w") as file:
+    #     for row in parsed_table:
+    #         file.write("\t".join([str(x) for x in list(row)]) + "\n")
+    # print("Created input file:\nTS_{}.tab".format(file_name))
 
 
 if __name__ == "__main__":

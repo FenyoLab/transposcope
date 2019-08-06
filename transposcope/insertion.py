@@ -1,16 +1,6 @@
 class Insertion:
     def __init__(
         self,
-        chromosome=None,
-        target_start=None,
-        target_end=None,
-        clip_start=None,
-        clip_end=None,
-        strand=None,
-        pred=None,
-        me_start=None,
-        me_end=None,
-        three_prime_end=None,
         named_tuple=None,
     ):
         # TODO - Make sure that these variables are needed
@@ -29,17 +19,6 @@ class Insertion:
             self.LINE1_START = named_tuple.me_start - 1
             self.LINE1_END = named_tuple.me_end
             self.THREE_PRIME = named_tuple.three_prime_end
-        else:
-            self.CLIP_START = clip_start
-            self.CLIP_END = clip_end
-            self.PRED = pred
-            self.CHROMOSOME = chromosome
-            self.TARGET_START = target_start
-            self.TARGET_END = target_end
-            self.STRAND = strand
-            self.LINE1_START = me_start - 1
-            self.LINE1_END = me_end
-            self.THREE_PRIME = three_prime_end
 
         self.read_keys_in_target_region = None
         # self.calculate_if_insertion_is_complement()

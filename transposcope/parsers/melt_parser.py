@@ -156,10 +156,11 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                     int(row_data["POS"]),  # 3' start
                     int(row_data["POS"]) + target_width,
                 ),  # 3' end
-                TSD,  # TSD
+                len(TSD),  # TSD
                 strand_me,
                 int(start_me),
                 int(end_me),
+                row_data["INFO"]
             ]
             # result_1 = [
             #     row_data["CHROM"],
@@ -212,10 +213,11 @@ def main(filepath):
             "chromosome",
             "target_5p",
             "target_3p",
-            "TSD",
+            "window",
             "me_strand",
             "me_start",
             "me_end",
+            "info"
         ],
     )
     for row in parsed_table[:10]:

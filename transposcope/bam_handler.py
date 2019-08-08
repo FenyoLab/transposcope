@@ -1,5 +1,4 @@
 import logging
-from collections import defaultdict
 from functools import reduce
 
 import pysam
@@ -21,24 +20,27 @@ class BamHandler:
         )
 
     def fetch_reads_in_region(self, insertion):
-        reads = defaultdict(list)
-        if insertion.target_5p:
+        reads = {}
+        if insertion.five_prime_target:
             for read in self.BAM_FILE.fetch(
                 reference=insertion.chromosome,
-                start=insertion.target_5p[0],
-                end=insertion.target_5p[1],
+                start=insertion.five_prime_target[0],
+                end=insertion.five_prime_target[1],
             ):
                 if not read.flag & (0x800 | 0x100):
-                    reads[read.query_name].insert(read.is_read2, read)
-
-        if insertion.target_3p:
+                    if read.query_name not in reads:
+                        reads[read.query_name] = [None, None]
+                    reads[read.query_name][read.is_read2] = read
+        if insertion.three_prime_target:
             for read in self.BAM_FILE.fetch(
                 reference=insertion.chromosome,
-                start=insertion.target_5p[0],
-                end=insertion.target_5p[1],
+                start=insertion.three_prime_target[0],
+                end=insertion.three_prime_target[1],
             ):
                 if not read.flag & (0x800 | 0x100):
-                    reads[read.query_name].insert(read.is_read2, read)
+                    if read.query_name not in reads:
+                        reads[read.query_name] = [None, None]
+                    reads[read.query_name][read.is_read2] = read
         return dict(reads)
 
     def all_reads(self):

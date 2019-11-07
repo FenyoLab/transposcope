@@ -16,9 +16,12 @@ from transposcope.bam_handler import BamHandler
 from transposcope.fasta_handler import FastaHandler
 from transposcope.file_writer import FileWriter
 from transposcope.gene_handler import GeneHandler
-from transposcope.initialize import (build_tree, check_paths,
-                                     create_output_folder_structure,
-                                     setup_logging)
+from transposcope.initialize import (
+    build_tree,
+    check_paths,
+    create_output_folder_structure,
+    setup_logging,
+)
 from transposcope.insertion import Insertion
 from transposcope.insertion_sites_reader import InsertionSiteReader
 from transposcope.parsers.melt_parser import main as melt_parser
@@ -58,26 +61,38 @@ def main(args):
     # # TODO - allow for multiple labels
     # #  - eg : pos, unlabeled - pos - negative, pos
     # # TODO - make the reference subdirectories using the writer class
-    check_paths(me_ref_path, host_ref_path, bam_path, insertions_file, genes_file_path)
+    check_paths(
+        me_ref_path, host_ref_path, bam_path, insertions_file, genes_file_path
+    )
     output_folder_path = os.path.join(os.getcwd(), "output")
-    (reference_path, transposcope_path, track_path) = create_output_folder_structure(
+    (
+        reference_path,
+        transposcope_path,
+        track_path,
+    ) = create_output_folder_structure(
         output_folder_path, group1, group2, sample_id
     )
 
     setup_logging()
     logging.info("***  TranspoScope ***")
     logging.info("### Input ###")
-    logging.info(" - Index File Path: {}".format(os.path.abspath(insertions_file)))
+    logging.info(
+        " - Index File Path: {}".format(os.path.abspath(insertions_file))
+    )
     logging.info(" - BAM File Path: {}".format(os.path.abspath(bam_path)))
     logging.info(
-        " - Mobile Element Reference File Path: {}".format(os.path.abspath(me_ref_path))
+        " - Mobile Element Reference File Path: {}".format(
+            os.path.abspath(me_ref_path)
+        )
     )
     logging.info(
         " - Host Genome Folder Path: {}".format(os.path.abspath(host_ref_path))
     )
     logging.info(
         " - refFlat.txt Path: {}".format(
-            os.path.abspath(genes_file_path) if genes_file_path else "undefined"
+            os.path.abspath(genes_file_path)
+            if genes_file_path
+            else "undefined"
         )
     )
 
@@ -101,7 +116,6 @@ def main(args):
         current_insertion.read_keys_in_target_region = reads_in_region.keys()
         insertions.append(current_insertion)
         print(current_insertion)
-        break
     logging.info("    --- DONE ---")
     logging.info(" - Finding Paired Ends")
     for read in bam_handler.all_reads():
@@ -123,8 +137,9 @@ def main(args):
     completed = 0
     for insertion in insertions:
         file_name = "{i.chromosome}_{i.insertion_site}".format(i=insertion)
-        insertion.fasta_string = fasta_handler.generate_fasta_sequence(insertion)
-        print(insertion.fasta_string)
+        insertion.fasta_string = fasta_handler.generate_fasta_sequence(
+            insertion
+        )
 
         fasta_path = file_writer.write_fasta(
             reference_path,

@@ -78,7 +78,7 @@ def create_output_folder_structure(output_folder_path, args):
 
     transposcope_path = os.path.join(
         "web",
-        "json",
+        "data",
         "{}".format(args.group1),
         "{}".format(args.group2),
         "{}".format(args.sample_id),
@@ -98,7 +98,7 @@ def create_output_folder_structure(output_folder_path, args):
     os.makedirs(reference_path)
     os.makedirs(transposcope_path)
     os.makedirs(track_path)
-    os.mkdir(os.path.join(reference_path, "fasta"))
+    os.mkdir(os.path.join(transposcope_path, "fasta"))
     os.mkdir(os.path.join(reference_path, "fastq"))
     os.mkdir(os.path.join(reference_path, "sam"))
 

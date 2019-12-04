@@ -3,12 +3,15 @@ import subprocess
 
 
 class Realigner:
-    def __init__(self, output_path):
+    def __init__(self, output_path, visualization_path):
         self.output_path = output_path
+        self.visualization_path = visualization_path
         if not os.path.exists(os.path.join(self.output_path, "fasta_indexed")):
             os.makedirs(os.path.join(self.output_path, "fasta_indexed"))
         if not os.path.exists(os.path.join(self.output_path, "bam")):
             os.makedirs(os.path.join(self.output_path, "bam"))
+        if not os.path.exists(os.path.join(self.visualization_path, "cram")):
+            os.makedirs(os.path.join(self.visualization_path, "cram"))
         if not os.path.exists(os.path.join(self.output_path, "bam_sorted")):
             os.makedirs(os.path.join(self.output_path, "bam_sorted"))
         if not os.path.exists(os.path.join(self.output_path, "logs")):
@@ -94,6 +97,21 @@ class Realigner:
         # Python 3.4
         subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
+        cram_path = os.path.join(
+            self.visualization_path, os.path.join("cram", file_name + ".cram")
+        )
+        cmd = [
+            "samtools",
+            "view",
+            "-T",
+            fasta_file_path,
+            "-C",
+            "-o",
+            cram_path,
+            bam_sorted_path,
+        ]
+
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
         # dir_path = [
         #     os.path.join(self.output_path, 'fastq'),
         #     os.path.join(self.output_path, 'bam'),
@@ -103,5 +121,3 @@ class Realigner:
         #     file_list = os.listdir(cur_path)
         #     for fileName in file_list:
         #         os.remove(cur_path + "/" + fileName)
-
-        return bam_sorted_path

@@ -6,11 +6,17 @@ Github: https://github.com/MarkGrivainis
 Description: Setup logging and initialize folder structures for output
 """
 
+from collections import namedtuple
 from functools import reduce
 import json
 import logging.config
 import os
 import shutil
+
+
+Paths = namedtuple(
+    "Paths", ["reference_path", "transposcope_path", "track_path"]
+)
 
 
 def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
@@ -33,9 +39,8 @@ def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
         logging.basicConfig(level=default_level)
     return logging
 
-def create_output_folder_structure(
-    output_folder_path, group1, group2, sample_id
-):
+
+def create_output_folder_structure(output_folder_path, args):
     """Creates the ouput folder structure for storing output and temporary files
 
     @param param:  output_folder_path
@@ -58,25 +63,25 @@ def create_output_folder_structure(
     reference_path = os.path.join(
         output_folder_path,
         "ref",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
+        "{}".format(args.group1),
+        "{}".format(args.group2),
+        "{}".format(args.sample_id),
     )
 
     track_path = os.path.join(
         "web",
         "track",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
+        "{}".format(args.group1),
+        "{}".format(args.group2),
+        "{}".format(args.sample_id),
     )
 
     transposcope_path = os.path.join(
         "web",
         "json",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
+        "{}".format(args.group1),
+        "{}".format(args.group2),
+        "{}".format(args.sample_id),
     )
     if os.path.exists(reference_path):
         shutil.rmtree(reference_path)
@@ -97,7 +102,7 @@ def create_output_folder_structure(
     os.mkdir(os.path.join(reference_path, "fastq"))
     os.mkdir(os.path.join(reference_path, "sam"))
 
-    return reference_path, transposcope_path, track_path
+    return Paths(reference_path, transposcope_path, track_path)
 
 
 def build_tree(base_path):
@@ -125,13 +130,7 @@ def build_tree(base_path):
     return dir_dict, found_table_info
 
 
-def check_paths(
-    line1_reference_path,
-    reference_genome_folder_path,
-    bam_file_location,
-    insertion_sites_file_path,
-    genes_path,
-):
+def check_paths(args):
     """ Function which checks input file paths to ensure that they are correct
 
     @param line1_reference_path:  path to the line1 reference file
@@ -155,33 +154,29 @@ def check_paths(
     @raise SystemExit:  Stops execution of transposcope if any
     paths are incorrect
     """
-    if not os.path.exists(line1_reference_path):
+    if not os.path.exists(args.me_reference):
         raise SystemExit(
             "\n\nERROR: Mobile Element FASTA file not found '{}'".format(
-                line1_reference_path
+                args.me_reference
             )
         )
-    if not os.path.exists(reference_genome_folder_path):
+    if not os.path.exists(args.host_reference):
         raise SystemExit(
             "\n\nERROR: Reference genome folder not found '{}'".format(
-                reference_genome_folder_path
+                args.host_reference
             )
         )
-    if not os.path.exists(bam_file_location):
-        raise SystemExit(
-            "\n\nERROR: BAM file not found '{}'".format(bam_file_location)
-        )
-    if not os.path.exists(insertion_sites_file_path):
+    if not os.path.exists(args.bam):
+        raise SystemExit("\n\nERROR: BAM file not found '{}'".format(args.bam))
+    if not os.path.exists(args.index):
         raise SystemExit(
             "\n\nERROR: Insertion sites file path invalid: {}".format(
-                insertion_sites_file_path
+                args.index
             )
         )
 
-    if genes_path:
-        if not os.path.exists(insertion_sites_file_path):
+    if args.genes:
+        if not os.path.exists(args.genes):
             raise SystemExit(
-                "\n\nERROR: refFlat.txt path invalid: {}".format(
-                    insertion_sites_file_path
-                )
+                "\n\nERROR: refFlat.txt path invalid: {}".format(args.genes)
             )

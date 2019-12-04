@@ -7,37 +7,82 @@ Description: Main entry point for generating files required by the
             visualization
 """
 
-import json
+# import json
 import logging
 import os
-import shutil
+
+# import shutil
 
 from transposcope.bam_handler import BamHandler
 from transposcope.fasta_handler import FastaHandler
 from transposcope.file_writer import FileWriter
 from transposcope.gene_handler import GeneHandler
 from transposcope.initialize import (
-    build_tree,
+    # build_tree,
     check_paths,
     create_output_folder_structure,
     setup_logging,
 )
 from transposcope.insertion import Insertion
-from transposcope.insertion_sites_reader import InsertionSiteReader
+
+# from transposcope.insertion_sites_reader import InsertionSiteReader
 from transposcope.parsers.melt_parser import main as melt_parser
-from transposcope.read_classifier import ReadClassifier
+
+# from transposcope.read_classifier import ReadClassifier
 from transposcope.reads_dict import ReadsDict
 from transposcope.realigner import Realigner
 
 
+@classmethod
 def setup():
-    pass
+    """Description
+
+    @param param:  Description
+    @type  param:  Type
+
+    @return:  Description
+    @rtype :  Type
+
+    @raise e:  Description
+    """
+
+
+def log_configuration(args):
+    """Description
+
+    @param param:  Description
+    @type  param:  Type
+
+    @return:  Description
+    @rtype :  Type
+
+    @raise e:  Description
+    """
+    logging.info("***  TranspoScope ***")
+    logging.info("### Input ###")
+    logging.info(" - Index File Path: %s", os.path.abspath(args.index))
+    logging.info(" - BAM File Path: %s", os.path.abspath(args.bam))
+    logging.info(
+        " - Mobile Element Reference File Path: %s",
+        os.path.abspath(args.me_reference),
+    )
+    logging.info(
+        " - Host Genome Folder Path: %s", os.path.abspath(args.host_reference)
+    )
+    logging.info(
+        " - refFlat.txt Path: %s",
+        os.path.abspath(args.genes) if args.genes else "undefined",
+    )
+
+    logging.info(" - Group 1: %s", args.group1)
+    logging.info(" - Group 2: %s", args.group2)
+    logging.info(" - Keep Intermediate Files: %s", args.keep_files)
 
 
 def main(args):
     """Main script which drives the alignment process
 
-    @param args:  list of command line argumnets provided when the script was 
+    @param args:  list of command line argumnents provided when the script was
     called
     @type  args:  tuple
 
@@ -47,75 +92,42 @@ def main(args):
     @raise e:  None
     """
 
-    group1 = args.group1
-    group2 = args.group2
-    sample_id = args.sample_id
-    bam_path = args.bam
-    insertions_file = args.index
-    me_ref_path = args.me_reference
-    host_ref_path = args.host_reference
-    genes_file_path = args.genes
-    keep_files = args.keep_files
+    # group1 = args.group1
+    # group2 = args.group2
+    # sample_id = args.sample_id
+    # bam_path = args.bam
+    # insertions_file = args.index
+    # me_ref_path = args.me_reference
+    # host_ref_path = args.host_reference
+    # genes_file_path = args.genes
+    # keep_files = args.keep_files
 
     # # config = get_config_from_file()
     # # TODO - allow for multiple labels
     # #  - eg : pos, unlabeled - pos - negative, pos
     # # TODO - make the reference subdirectories using the writer class
-    check_paths(
-        me_ref_path, host_ref_path, bam_path, insertions_file, genes_file_path
-    )
+    check_paths(args)
     output_folder_path = os.path.join(os.getcwd(), "output")
-    (
-        reference_path,
-        transposcope_path,
-        track_path,
-    ) = create_output_folder_structure(
-        output_folder_path, group1, group2, sample_id
-    )
+    # TODO - Parse args to create_output_folder_structure
+    paths = create_output_folder_structure(output_folder_path, args)
 
     setup_logging()
-    logging.info("***  TranspoScope ***")
-    logging.info("### Input ###")
-    logging.info(
-        " - Index File Path: {}".format(os.path.abspath(insertions_file))
-    )
-    logging.info(" - BAM File Path: {}".format(os.path.abspath(bam_path)))
-    logging.info(
-        " - Mobile Element Reference File Path: {}".format(
-            os.path.abspath(me_ref_path)
-        )
-    )
-    logging.info(
-        " - Host Genome Folder Path: {}".format(os.path.abspath(host_ref_path))
-    )
-    logging.info(
-        " - refFlat.txt Path: {}".format(
-            os.path.abspath(genes_file_path)
-            if genes_file_path
-            else "undefined"
-        )
-    )
+    log_configuration(args)
 
-    logging.info(" - Group 1: {}".format(group1))
-    logging.info(" - Group 2: {}".format(group2))
-    logging.info(" - Keep Intermediate Files: {}".format(keep_files))
-
-    input_list = melt_parser(insertions_file)
+    input_list = melt_parser(args.index)
     # insertion_sites_reader = InsertionSiteReader(insertion_list_path)
     logging.info("### Processing BAM File ###")
-    bam_handler = BamHandler(bam_path)
-    fasta_handler = FastaHandler(me_ref_path, host_ref_path)
+    bam_handler = BamHandler(args.bam)
+    fasta_handler = FastaHandler(args.me_reference, args.host_reference)
     insertions = []
     reads_dictionary = ReadsDict()
     logging.info(" - Finding Reads in Target Regions")
     for parsed_input in input_list:
         current_insertion = Insertion(parsed_input)
         reads_in_region = bam_handler.fetch_reads_in_region(current_insertion)
-
         reads_dictionary += reads_in_region
         current_insertion.read_keys_in_target_region = reads_in_region.keys()
         insertions.append(current_insertion)
-        print(current_insertion)
     logging.info("    --- DONE ---")
     logging.info(" - Finding Paired Ends")
     for read in bam_handler.all_reads():
@@ -125,10 +137,10 @@ def main(args):
     logging.info("    --- DONE ---")
     logging.info("### Processing Insertions ###")
     file_writer = FileWriter()
-    realigner = Realigner(reference_path)
+    realigner = Realigner(paths.reference_path)
     # classifier = ReadClassifier(transposcope_path)
-    if genes_file_path:
-        gene_handler = GeneHandler(genes_file_path)
+    if args.genes:
+        gene_handler = GeneHandler(args.genes)
     insertions.sort(key=lambda x: x.chromosome)
     heading_table = {"Heading": ("ID", "Gene", "Probability"), "data": []}
 
@@ -142,13 +154,13 @@ def main(args):
         )
 
         fasta_path = file_writer.write_fasta(
-            reference_path,
+            paths.reference_path,
             file_name,
             insertion.fasta_string,
             ">{i.chromosome}_{i.insertion_site}\n".format(i=insertion),
         )
         fastq1_path, fastq2_path = file_writer.write_fastq(
-            reference_path,
+            paths.reference_path,
             reads_dictionary,
             file_name,
             insertion.read_keys_in_target_region,
@@ -158,7 +170,7 @@ def main(args):
         )
 
         #     # TODO - add the option to not add gene information
-        if genes_file_path:
+        if args.genes:
             gene_info = gene_handler.find_nearest_gene(
                 insertion.chromosome, insertion.insertion_site
             )

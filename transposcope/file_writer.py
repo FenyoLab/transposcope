@@ -8,12 +8,18 @@ import os
 
 class FileWriter:
     @staticmethod
-    def write_json(file_path, data):
+    def write_json_b64(file_path, data):
         with open(file_path, "wb+") as json_out_fp:
             json_from_dict = json.dumps(data)
-            gz = gzip.compress(str.encode(json_from_dict))
-            b64 = base64.standard_b64encode(gz)
+            gzip_json = gzip.compress(str.encode(json_from_dict))
+            b64 = base64.standard_b64encode(gzip_json)
             json_out_fp.write(b64)
+
+    @staticmethod
+    def write_json(file_path, data):
+        with open(file_path, "w") as json_out_fp:
+            json_from_dict = json.dumps(data)
+            json_out_fp.write(json_from_dict)
 
     @staticmethod
     def write_fasta(file_path, file_name, fasta_string, fasta_header):
@@ -21,7 +27,7 @@ class FileWriter:
         fa = open(fasta_path, "w")
         fa.write(fasta_header)
         fa.write(fasta_string)
-        fa.write('\n')
+        fa.write("\n")
         fa.close()
         return fasta_path
 

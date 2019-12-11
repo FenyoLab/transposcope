@@ -9,7 +9,7 @@ import os
 class FileWriter:
     @staticmethod
     def write_json_b64(file_path, data):
-        with open(file_path, "wb+") as json_out_fp:
+        with open(file_path + ".json.gz.txt", "wb+") as json_out_fp:
             json_from_dict = json.dumps(data)
             gzip_json = gzip.compress(str.encode(json_from_dict))
             b64 = base64.standard_b64encode(gzip_json)
@@ -17,7 +17,7 @@ class FileWriter:
 
     @staticmethod
     def write_json(file_path, data):
-        with open(file_path, "w") as json_out_fp:
+        with open(file_path + ".json", "w") as json_out_fp:
             json_from_dict = json.dumps(data)
             json_out_fp.write(json_from_dict)
 
@@ -42,11 +42,7 @@ class FileWriter:
         return complement_sequence
 
     def write_fastq(
-        self,
-        file_path,
-        reads_dictionary,
-        file_name,
-        keys_of_reads_in_target_region,
+        self, file_path, reads_dictionary, file_name, keys_of_reads_in_target_region,
     ):
         fastq1_path = os.path.join(file_path, "fastq", file_name + ".R1.fastq")
         fastq2_path = os.path.join(file_path, "fastq", file_name + ".R2.fastq")

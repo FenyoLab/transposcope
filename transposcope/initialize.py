@@ -14,9 +14,7 @@ import os
 import shutil
 
 
-Paths = namedtuple(
-    "Paths", ["reference_path", "transposcope_path", "track_path"]
-)
+Paths = namedtuple("Paths", ["reference_path", "transposcope_path", "track_path"])
 
 
 def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
@@ -90,15 +88,14 @@ def create_output_folder_structure(output_folder_path, args):
     if os.path.exists(track_path):
         shutil.rmtree(track_path)
 
-    web_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "web/web.zip"
-    )
+    web_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "web/web.zip")
     shutil.unpack_archive(web_path)
 
     os.makedirs(reference_path)
     os.makedirs(transposcope_path)
     os.makedirs(track_path)
     os.mkdir(os.path.join(transposcope_path, "fasta"))
+    os.mkdir(os.path.join(transposcope_path, "meta"))
     os.mkdir(os.path.join(reference_path, "fastq"))
     os.mkdir(os.path.join(reference_path, "sam"))
 
@@ -170,9 +167,7 @@ def check_paths(args):
         raise SystemExit("\n\nERROR: BAM file not found '{}'".format(args.bam))
     if not os.path.exists(args.index):
         raise SystemExit(
-            "\n\nERROR: Insertion sites file path invalid: {}".format(
-                args.index
-            )
+            "\n\nERROR: Insertion sites file path invalid: {}".format(args.index)
         )
 
     if args.genes:

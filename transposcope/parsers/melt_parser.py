@@ -143,7 +143,7 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
 
         assess = row_data["INFO"]["ASSESS"]
         if strand_me == "null":
-            # TODO - write a better format string
+            # TODO - write a better format string and use logger
             print("WARNING - strand is not specified:", row_data)
         else:
             result = [
@@ -160,7 +160,7 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                 strand_me,
                 int(start_me),
                 int(end_me),
-                row_data["INFO"]
+                row_data["INFO"],
             ]
             # result_1 = [
             #     row_data["CHROM"],
@@ -217,7 +217,7 @@ def main(filepath):
             "me_strand",
             "me_start",
             "me_end",
-            "info"
+            "info",
         ],
     )
     for row in parsed_table[:10]:

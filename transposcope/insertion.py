@@ -1,4 +1,8 @@
+import json
+
+
 class Insertion:
+    # TODO: Define MetaData using this class
     def __init__(self, named_tuple):
         # TODO - Make sure that these variables are needed
         self.five_prime_sequence = ""
@@ -6,7 +10,7 @@ class Insertion:
         self.me_sequence = ""
 
         self.chromosome = named_tuple.chromosome
-        self.five_prime_target = named_tuple.target_5p
+        self.five_prime_target = named_tuple.target_5p  # start and end coordinate
         self.three_prime_target = named_tuple.target_3p
         self.insertion_window = named_tuple.window
         self.strand = named_tuple.me_strand

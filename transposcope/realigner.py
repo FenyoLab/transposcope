@@ -6,6 +6,7 @@ class Realigner:
     def __init__(self, output_path, visualization_path):
         self.output_path = output_path
         self.visualization_path = visualization_path
+        # TODO: Move all this to initialize.py
         if not os.path.exists(os.path.join(self.output_path, "fasta_indexed")):
             os.makedirs(os.path.join(self.output_path, "fasta_indexed"))
         if not os.path.exists(os.path.join(self.output_path, "bam")):
@@ -78,8 +79,7 @@ class Realigner:
         # p.check_returncode()  # change this to log errors
 
         bam_sorted_path = os.path.join(
-            self.output_path,
-            os.path.join("bam_sorted", file_name + ".sort.bam"),
+            self.output_path, os.path.join("bam_sorted", file_name + ".sort.bam"),
         )
 
         cmd = ["samtools", "sort", "-o", bam_sorted_path, bam_path]
@@ -88,8 +88,7 @@ class Realigner:
         subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
 
         bai_path = os.path.join(
-            self.output_path,
-            os.path.join("bam_sorted", file_name + ".sort.bam.bai"),
+            self.output_path, os.path.join("bam_sorted", file_name + ".sort.bam.bai"),
         )
 
         cmd = ["samtools", "index", bam_sorted_path, bai_path]
@@ -112,6 +111,11 @@ class Realigner:
         ]
 
         subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
+
+        cmd = ["samtools", "index", cram_path]
+
+        subprocess.call(cmd, stdout=self.al_out, stderr=self.al_err)
+
         # dir_path = [
         #     os.path.join(self.output_path, 'fastq'),
         #     os.path.join(self.output_path, 'bam'),

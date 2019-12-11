@@ -57,3 +57,8 @@ class BamHandler:
                     )
                 )
                 next_log += ten_percent
+        logging.info(
+            "   ├ Percentage of BAM file processed: {:.2%}.".format(
+                completed / self.num_reads_in_bam
+            )
+        )

@@ -42,12 +42,9 @@ def log_configuration(args, paths):
     logging.info(" - Index File Path: %s", os.path.abspath(args.index))
     logging.info(" - BAM File Path: %s", os.path.abspath(args.bam))
     logging.info(
-        " - Mobile Element Reference File Path: %s",
-        os.path.abspath(args.me_reference),
+        " - Mobile Element Reference File Path: %s", os.path.abspath(args.me_reference),
     )
-    logging.info(
-        " - Host Genome Folder Path: %s", os.path.abspath(args.host_reference)
-    )
+    logging.info(" - Host Genome Folder Path: %s", os.path.abspath(args.host_reference))
     logging.info(
         " - refFlat.txt Path: %s",
         os.path.abspath(args.genes) if args.genes else "undefined",
@@ -57,9 +54,7 @@ def log_configuration(args, paths):
     logging.info(" - Group 2: %s", args.group2)
     logging.info(" - Keep Intermediate Files: %s", args.keep_files)
     logging.info(" - Temp Output Directory: %s", paths.reference_path)
-    logging.info(
-        " - Visualization output directory: %s", paths.transposcope_path
-    )
+    logging.info(" - Visualization output directory: %s", paths.transposcope_path)
 
 
 def process_bam(bam, index):
@@ -94,8 +89,9 @@ def process_insertions(args, paths, insertions, reads_dictionary):
     if args.genes:
         gene_handler = GeneHandler(args.genes)
     # TODO make a separate script for handling the table of insertions
+    # TODO: Add link to UCSC
     insertion_site_table = {
-        "Heading": ("ID", "Gene", "Probability"),
+        "heading": ("ID", "Gene", "Probability"),
         "data": [],
     }
 
@@ -103,10 +99,14 @@ def process_insertions(args, paths, insertions, reads_dictionary):
     next_log = ten_percent
     completed = 0
     for insertion in insertions:
+
         file_name = "{i.chromosome}_{i.insertion_site}".format(i=insertion)
-        insertion.fasta_string = fasta_handler.generate_fasta_sequence(
-            insertion
+
+        FILE_WRITER.write_json(
+            os.path.join(paths.transposcope_path, "meta", file_name), insertion.all_info
         )
+
+        insertion.fasta_string = fasta_handler.generate_fasta_sequence(insertion)
 
         fasta_path = FILE_WRITER.write_fasta(
             paths.transposcope_path,
@@ -172,9 +172,7 @@ def main(args):
 
     insertions, reads_dictionary = process_bam(args.bam, args.index)
 
-    insertion_site_table = process_insertions(
-        args, paths, insertions, reads_dictionary
-    )
+    insertion_site_table = process_insertions(args, paths, insertions, reads_dictionary)
 
     #     TODO - write out index file
     logging.info("    --- DONE ---")
@@ -206,8 +204,7 @@ def main(args):
     logging.info("### The website is being built into: %s", web_dir)
 
     FILE_WRITER.write_json(
-        os.path.join(paths.transposcope_path, "table_info.json.gz.txt"),
-        insertion_site_table,
+        os.path.join(paths.transposcope_path, "table_info"), insertion_site_table,
     )
 
     tree, found_table = build_tree(os.path.join(web_dir, "data"))

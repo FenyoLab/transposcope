@@ -1,6 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 
 *.repred
+web/
 
 /input
 /output
@@ -143,3 +144,10 @@ dmypy.json
 .venv/
 
 # End of https://www.gitignore.io/api/python
+
+
+*.bb
+
+*.swp
+
+

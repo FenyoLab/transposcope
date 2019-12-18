@@ -16,7 +16,7 @@ class ReadsDict(dict):
             return False
         else:
             found_read = self[v.query_name]
-            if len(found_read) == 2:
+            if len(found_read) == 2 and None not in found_read:
                 return -1
             elif len(found_read) > 2:
                 raise ValueError(
@@ -28,12 +28,13 @@ class ReadsDict(dict):
                     "There should not be empty lists at this point"
                 )
             else:
-                if (
-                    found_read[0].is_read2
-                    and v.is_read1
-                    or found_read[0].is_read1
-                    and v.is_read2
-                ):
-                    self[v.query_name].insert(v.is_read2, v)
-                    return 0
+                #  if (
+                #      found_read[0].is_read2
+                #      and v.is_read1
+                #      or found_read[0].is_read1
+                #      and v.is_read2
+                #  ):
+                    #  self[v.query_name].insert(v.is_read2, v)
+                    #  return 0
+                self[v.query_name][v.is_read2] = v
             return True

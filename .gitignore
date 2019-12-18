@@ -1,6 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 
 *.repred
+web/
 
 /input
 /output
@@ -148,3 +149,5 @@ dmypy.json
 *.bb
 
 *.swp
+
+

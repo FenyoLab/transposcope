@@ -131,7 +131,7 @@ def process_insertions(args, paths, insertions, reads_dictionary):
 
         insertion_site_table["data"].append(
             [
-                "{}:{}".format(insertion.chromosome, insertion.insertion_site),
+                "{}-{}".format(insertion.chromosome, insertion.insertion_site),
                 gene_info,
                 "{:.2f}".format(insertion.pred),
             ]

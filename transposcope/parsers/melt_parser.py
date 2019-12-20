@@ -55,13 +55,7 @@ def parse_meta_info(melt_file_handler):
                 meta_data[key][current_id]["length"] = chrom_length.group(1)
             description = re.search(r'Description="([^"]+)', value.strip("<>"))
             if description:
-<<<<<<< HEAD
                 (meta_data[key][current_id]["Description"]) = description.group(1)
-=======
-                (
-                    meta_data[key][current_id]["Description"]
-                ) = description.group(1)
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
                 number = re.search(r"Number=([^,]+)", value.strip("<>"))
             if number:
                 meta_data[key][current_id]["Number"] = number.group(1)
@@ -138,17 +132,9 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
         # NOTE: The insertion starts at the base following POS
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
 
-<<<<<<< HEAD
         TSD = row_data["INFO"]["TSD"] if row_data["INFO"]["TSD"] != "null" else ""
-=======
-        TSD = (
-            row_data["INFO"]["TSD"]
-            if row_data["INFO"]["TSD"] != "null"
-            else ""
-        )
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
 
-        assess = row_data["INFO"]["ASSESS"]
+        asses = row_data["INFO"]["ASSESS"]
         if strand_me == "null":
             # TODO - write a better format string and use logger
             print("WARNING - strand is not specified:", row_data)
@@ -167,48 +153,15 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                 strand_me,
                 int(start_me),
                 int(end_me),
+                asses,
                 row_data["INFO"],
             ]
-<<<<<<< HEAD
-=======
-            # result_1 = [
-            #     row_data["CHROM"],
-            #     int(row_data["POS"]) - target_width,
-            #     int(row_data["POS"]),
-            #     int(row_data["POS"]),
-            #     int(row_data["POS"]),
-            #     strand_me,
-            #     assess,
-            #     strand_me == "-",
-            #     "",
-            #     int(start_me) - 1,
-            #     int(end_me) + 1,
-            # ]
-            # formated_table.append(result_1)
-            # result_2 = [
-            #     row_data["CHROM"],
-            #     int(row_data["POS"]) + 1,
-            #     int(row_data["POS"]) + 1 + target_width,
-            #     int(row_data["POS"]) + 1,
-            #     int(row_data["POS"]) + 1,
-            #     strand_me,
-            #     assess,
-            #     strand_me != "-",
-            #     "",
-            #     int(start_me) - 1,
-            #     int(end_me) + 1,
-            # ]
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
             formated_table.append(result)
     return formated_table
 
 
 def main(filepath):
-<<<<<<< HEAD
     """Convert MELT output into TranspoScope input.
-=======
-    """Main entry point for converting MELT output into TranspoScope input.
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
 
     @param filepath:  Path to the MELT output file
     @type  param:  str
@@ -231,20 +184,13 @@ def main(filepath):
             "me_strand",
             "me_start",
             "me_end",
+            "pred",
             "info",
         ],
     )
-    for row in parsed_table[:10]:
+    for row in parsed_table:
         yield row_tuple(*row)
 
-<<<<<<< HEAD
-=======
-    # with open("./TS_{}.tab".format(file_name), "w") as file:
-    #     for row in parsed_table:
-    #         file.write("\t".join([str(x) for x in list(row)]) + "\n")
-    # print("Created input file:\nTS_{}.tab".format(file_name))
-
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
 
 if __name__ == "__main__":
     FILENAME = sys.argv[1] if len(sys.argv) > 1 else None

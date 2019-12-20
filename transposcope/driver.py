@@ -1,4 +1,6 @@
 """
+Driver script for TranspoScope.
+
 File: driver.py
 Author: Mark Grivainis
 Email: mark.grivainis@fenyolab.org
@@ -6,6 +8,7 @@ Github: https://github.com/MarkGrivainis
 Description: Main entry point for generating files required by the
             visualization
 """
+
 
 import json
 import logging
@@ -27,6 +30,7 @@ from transposcope.insertion import Insertion
 
 # from transposcope.insertion_sites_reader import InsertionSiteReader
 from transposcope.parsers.melt_parser import main as melt_parser
+from transposcope.parsers.tipseqhunter_parser import main as tipseq_parser
 
 # from transposcope.read_classifier import ReadClassifier
 from transposcope.reads_dict import ReadsDict
@@ -61,7 +65,8 @@ def process_bam(bam, index):
     logging.info("### Processing BAM File ###")
     bam_handler = BamHandler(bam)
     # TODO - Add a tipseq parser; choose using an argument
-    input_list = melt_parser(index)
+    # input_list = melt_parser(index)
+    input_list = tipseq_parser(index)
     insertions = []
     reads_dictionary = ReadsDict()
     logging.info(" - Finding Reads in Target Regions")
@@ -99,7 +104,6 @@ def process_insertions(args, paths, insertions, reads_dictionary):
     next_log = ten_percent
     completed = 0
     for insertion in insertions:
-
         file_name = "{i.chromosome}_{i.insertion_site}".format(i=insertion)
 
         FILE_WRITER.write_json(
@@ -131,9 +135,9 @@ def process_insertions(args, paths, insertions, reads_dictionary):
 
         insertion_site_table["data"].append(
             [
-                "{}-{}".format(insertion.chromosome, insertion.insertion_site),
+                "{}:{}".format(insertion.chromosome, insertion.insertion_site),
                 gene_info,
-                "{:.2f}".format(insertion.pred),
+                "{:.2f}".format(float(insertion.pred)),
             ]
         )
         completed += 1
@@ -148,7 +152,8 @@ def process_insertions(args, paths, insertions, reads_dictionary):
 
 
 def main(args):
-    """Main script which drives the alignment process
+    """
+    Main script which drives the alignment process.
 
     @param args:  list of command line argumnents provided when the script was
     called
@@ -159,7 +164,6 @@ def main(args):
 
     @raise e:  None
     """
-
     # # TODO - allow for multiple labels
     # #  - eg : pos, unlabeled - pos - negative, pos
     # # TODO - make the reference subdirectories using the writer class

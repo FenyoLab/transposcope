@@ -17,7 +17,7 @@ class Insertion:
         self.all_info = named_tuple._asdict()
         self.me_start = named_tuple.me_start - 1
         self.me_end = named_tuple.me_end
-        self.pred = -1
+        self.pred = named_tuple.pred
 
         self.read_keys_in_target_region = None
 

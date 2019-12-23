@@ -176,6 +176,7 @@ def main(filepath: str):
             "me_end",
             "pred",
             "regions",
+            "type",
             "info",
         ],
     )
@@ -209,6 +210,7 @@ def main(filepath: str):
             row.me_end,
             row.pred,
             regions,
+            "tipseq",
             row,
         ]
         yield row_tuple(*tmp)

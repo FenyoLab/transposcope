@@ -8,6 +8,7 @@ Description: A parser which converts TIPseqHunter REPRED files into
 """
 
 from collections import namedtuple
+import logging
 import os
 import sys
 
@@ -157,11 +158,11 @@ def main(filepath: str):
     :param path:  output path
     :type  path:  str
     """
-
     file_name = filepath.split("/")[-1].split(".")[0]
     repred_df = load_repred(filepath)
-    if validate_repred(repred_df):
-        print("Repred is valid")
+    # TODO: Rase error if not valid repred file
+    # if validate_repred(repred_df):
+    #     logging.info(" - Repred is valid")
 
     repred_df = convert_dataframe(repred_df)
     row_tuple = namedtuple(
@@ -180,8 +181,7 @@ def main(filepath: str):
             "info",
         ],
     )
-    # TODO: Remove head()
-    for row in repred_df.head(50).itertuples(index=False):
+    for row in repred_df.itertuples(index=False):
         if row.strand == "+":
             orientation = 1
             ins_site = row.me_end - row.me_start
@@ -226,4 +226,4 @@ if __name__ == "__main__":
     PATH = os.getcwd()
 
     if FILENAME:
-        main(FILENAME, PATH)
+        main(PATH)

@@ -1,3 +1,6 @@
+import logging
+
+
 class ReadsDict(dict):
     def __iadd__(self, other):
         self.update(other)
@@ -8,13 +11,13 @@ class ReadsDict(dict):
             yield self[key]
 
     def insert(self, v):
-        # TODO: Only add primary alignments
         # 0x800 and 0x100 should be ignored
         # This should be logged
         if v.flag & (0x800 | 0x100):
-            # TODO: Add documentation indicating that these reads are discarded
+            # logging.info("Supplementary read was discarded: %s", v.query_name)
             return False
         else:
+
             found_read = self[v.query_name]
             if len(found_read) == 2 and None not in found_read:
                 return -1
@@ -24,17 +27,7 @@ class ReadsDict(dict):
                     "with the same query name: ({})".format(v.query_name)
                 )
             elif len(found_read) == 0:
-                raise ValueError(
-                    "There should not be empty lists at this point"
-                )
+                raise ValueError("There should not be empty lists at this point")
             else:
-                #  if (
-                #      found_read[0].is_read2
-                #      and v.is_read1
-                #      or found_read[0].is_read1
-                #      and v.is_read2
-                #  ):
-                    #  self[v.query_name].insert(v.is_read2, v)
-                    #  return 0
                 self[v.query_name][v.is_read2] = v
             return True

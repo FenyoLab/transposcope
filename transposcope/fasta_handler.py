@@ -9,7 +9,7 @@ class FastaHandler:
         self._reference_genome_seq = None
         self._reference_genome_folder_path = reference_genome_folder_path
         self._current_chromosome = None
-        with open(me_reference_path, "rU") as handle:
+        with open(me_reference_path, "r") as handle:
             self._ME_REFERENCE_SEQ = next(SimpleFastaParser(handle))[1].upper()
 
     def set_reference_genome(self, reference_genome_chromosome):
@@ -60,9 +60,15 @@ class FastaHandler:
 
         insertion.me_sequence = me_sequence
 
+        if insertion.insertion_window and insertion.type == "melt":
+            insertion.three_prime_sequence = (
+                insertion.five_prime_sequence[-insertion.insertion_window :]
+                + insertion.three_prime_sequence
+            )
+
         return (
             insertion.five_prime_sequence
-            + insertion.me_sequence
+            + insertion.me_sequence.lower()
             + insertion.three_prime_sequence
         )
 
@@ -76,3 +82,64 @@ class FastaHandler:
         )
         reverse_complement_sequence = complement_sequence[::-1]
         return reverse_complement_sequence
+
+
+if __name__ == "__main__":
+    import sys
+    from collections import namedtuple
+    from insertion import Insertion
+
+    ME, GE = sys.argv[1:3] if len(sys.argv) > 1 else None
+    RowTuple = namedtuple(
+        "insertion",
+        [
+            "chromosome",
+            "target_5p",
+            "target_3p",
+            "window",
+            "me_strand",
+            "me_start",
+            "me_end",
+            "pred",
+            "region",
+            "type",
+            "info",
+        ],
+    )
+    if ME and GE:
+        FA = FastaHandler(ME, GE)
+        print(
+            FA.get_reference_nucleotides_in_range(112636606, 112636616, "chr1"),
+            " | ",
+            FA.get_reference_nucleotides_in_range(112636616, 112636626, "chr1"),
+        )
+        print(FA.get_reference_nucleotides_in_range(112636606, 112636626, "chr1"))
+        INSERTION = RowTuple(
+            chromosome="chr1",
+            target_5p=(112635616, 112636616),
+            target_3p=(112636616, 112637616),
+            window=18,
+            me_strand="-",
+            me_start=4427,
+            me_end=6019,
+            pred="5",
+            region=[],
+            type="melt",
+            info={
+                "TSD": "AAATAGGGACAGTTTTTT",
+                "ASSESS": "5",
+                "INTERNAL": "NM_006135,INTRONIC",
+                "SVTYPE": "LINE1",
+                "SVLEN": "1592",
+                "MEINFO": "L1Ta,4427,6019,-",
+                "DIFF": "0.16:n1-4426,n5021-5395,t5418a,n5421,t5422a,n5425-5425,n5438-5439,c5443a,n5447,n5449,n5451,n5454,n5456,t5535g,g5538c,n5628,n5659,n5661,n5666,n5668,n5673-5678,n5685,n5687,n5689-5691,n5693,n5701,n5703-5704,n5706-5707,c5709a,n5711,n5713,c5715a,n5718,n5722-5723,g5724a,n5726-5726,n5728,n5730,n5740,n5752,t5753a,n5789-5789,t5808a,a6006g",
+                "LP": "10",
+                "RP": "21",
+                "RA": "-1.07",
+                "ISTP": "0",
+                "PRIOR": "false",
+                "SR": "27",
+            },
+        )
+        INSERTION = Insertion(INSERTION)
+        print(FA.generate_fasta_sequence(INSERTION))

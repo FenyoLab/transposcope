@@ -22,7 +22,7 @@ class Insertion:
         self.insertion_window = insertion_data.window
         self.strand = insertion_data.me_strand
         self.all_info = insertion_data._asdict()
-        self.me_start = insertion_data.me_start - 1
+        self.me_start = insertion_data.me_start
         self.me_end = insertion_data.me_end
         self.type = insertion_data.type
         self.pred = insertion_data.pred

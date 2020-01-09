@@ -131,6 +131,8 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
     for row_data in extracted_vcf_data:
         # NOTE: The insertion starts at the base following POS
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
+        start_me = int(start_me)
+        end_me = int(end_me)
 
         TSD = row_data["INFO"]["TSD"]
         tsd_offset = 0
@@ -142,13 +144,16 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
 
         asses = row_data["INFO"]["ASSESS"]
 
+        # when undetermined the start is set to -1 which breaks offsets
+        start_me = max(0, start_me)
+
         me_width = int(end_me) - int(start_me)
 
         regions = [
             {"name": "5P Insertion Site", "x": [target_width, 1], "color": "#0000FF"},
             {
                 "name": "3P Insertion Site",
-                "x": [target_width + me_width, 1],
+                "x": [target_width + me_width - 1, 1],
                 "color": "#0000FF",
             },
         ]
@@ -157,14 +162,14 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                 {
                     "name": "5P TSD",
                     "x": [target_width - TSD_WIDTH, TSD_WIDTH],
-                    "color": "#00FF00",
+                    "color": "#48c2e0",
                 }
             )
             regions.append(
                 {
                     "name": "3P TSD",
                     "x": [target_width + me_width, TSD_WIDTH],
-                    "color": "#00FF00",
+                    "color": "#48c2e0",
                 },
             )
         if strand_me == "null":
@@ -184,8 +189,8 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
                 ),  # 3' end
                 TSD_WIDTH,  # TSD
                 strand_me,
-                int(start_me),
-                int(end_me),
+                start_me,
+                end_me,
                 asses,
                 regions,
                 "melt",

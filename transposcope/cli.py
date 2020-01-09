@@ -11,7 +11,6 @@ import argparse
 
 import transposcope.viewer.server as server
 import transposcope.driver as ts
-import transposcope.parsers.main as ip
 
 
 def main():
@@ -43,15 +42,19 @@ def main():
         ),
     )
     transposcope_parser.add_argument(
+        "index_type",
+        type=str,
+        help="The software used to identify insertions",
+        choices=["melt", "tipseqhunter"],
+    )
+    transposcope_parser.add_argument(
         "index",
         type=str,
         help="The path to the index file which describes the coordinates of insertion sites",
     )
     transposcope_parser.add_argument("bam", type=str, help="path to bam file")
     transposcope_parser.add_argument(
-        "me_reference",
-        type=str,
-        help="path to the mobile element's FASTA file",
+        "me_reference", type=str, help="path to the mobile element's FASTA file",
     )
     transposcope_parser.add_argument(
         "host_reference",
@@ -83,12 +86,11 @@ def main():
 
     transposcope_parser.add_argument(
         "--keep_files",
-        type=bool,
         help=(
             "Flag which determines whether intermediate bam files and"
             + " fasta files are deleted (default: %(default)s)"
         ),
-        default=False,
+        action="store_true",
     )
 
     transposcope_parser.set_defaults(func=ts.main)
@@ -102,18 +104,6 @@ def main():
         help="The path to the web directory created by the align tool.",
     )
     viewer_parser.set_defaults(func=server.main)
-
-    input_parser = subparsers.add_parser(
-        "parser", help="Parse TIPseqHunter or MELT output"
-    )
-    input_parser.add_argument(
-        "type", type=str, help="The type of input {TIPseqHunter,MELT}"
-    )
-
-    input_parser.add_argument(
-        "path", type=str, help="The path to the file to be parsed."
-    )
-    input_parser.set_defaults(func=ip.main)
 
     args = parser.parse_args()
     args.func(args)

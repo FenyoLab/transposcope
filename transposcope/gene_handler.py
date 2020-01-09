@@ -26,11 +26,16 @@ class GeneHandler:
         found = False
         gene = ""
         color_grad = [
-            "rgb(180, 218, 4)",
-            "rgb(60, 211, 4)",
-            "rgb(4, 204, 59)",
-            "rgb(4, 197, 163)",
-            "rgb(3, 119, 190)",
+            # "rgb(180, 218, 4)",
+            # "rgb(60, 211, 4)",
+            # "rgb(4, 204, 59)",
+            # "rgb(4, 197, 163)",
+            # "rgb(3, 119, 190)",
+            "#b4da04",
+            "#87c132",
+            "#5ba861",
+            "#2f8f8f",
+            "#0377be",
         ]
         a = self._refFlat.query(
             'chrom == "'
@@ -64,12 +69,12 @@ class GeneHandler:
             subs = self._refFlat.query('chrom == "' + chromosome + '"')
             subs = subs.reset_index()
             closest_start = next(
-                subs.ix[
+                subs.iloc[
                     (subs["txStart"] - input_chromosome).abs().argsort()[:1]
                 ].itertuples()
             )
             closest_end = next(
-                subs.ix[
+                subs.iloc[
                     (subs["txEnd"] - input_chromosome).abs().argsort()[:1]
                 ].itertuples()
             )
@@ -103,4 +108,5 @@ class GeneHandler:
             elif 10000 < dist:
                 color = color_grad[4]
 
-        return gene, color
+        # return gene, color
+        return "<span style='color:{}'>{}</span>".format(color, gene)

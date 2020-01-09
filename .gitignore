@@ -150,4 +150,4 @@ dmypy.json
 
 *.swp
 
-
+.vscode/

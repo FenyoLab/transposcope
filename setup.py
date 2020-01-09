@@ -7,7 +7,7 @@ files = ["web/web.zip", "config/logging.json"]
 
 setuptools.setup(
     name="transposcope",
-    version="0.1.2",
+    version="2.0.0",
     author="Mark Grivainis",
     author_email="mark.grivainis@fenyolab.org",
     description="A package for visualizing read coverage in areas surrounding novel mobile element insertions.",

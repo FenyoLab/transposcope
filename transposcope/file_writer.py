@@ -8,12 +8,18 @@ import os
 
 class FileWriter:
     @staticmethod
-    def write_json(file_path, data):
-        with open(file_path, "wb+") as json_out_fp:
+    def write_json_b64(file_path, data):
+        with open(file_path + ".json.gz.txt", "wb+") as json_out_fp:
             json_from_dict = json.dumps(data)
-            gz = gzip.compress(str.encode(json_from_dict))
-            b64 = base64.standard_b64encode(gz)
+            gzip_json = gzip.compress(str.encode(json_from_dict))
+            b64 = base64.standard_b64encode(gzip_json)
             json_out_fp.write(b64)
+
+    @staticmethod
+    def write_json(file_path, data):
+        with open(file_path + ".json", "w") as json_out_fp:
+            json_from_dict = json.dumps(data)
+            json_out_fp.write(json_from_dict)
 
     @staticmethod
     def write_fasta(file_path, file_name, fasta_string, fasta_header):
@@ -21,7 +27,7 @@ class FileWriter:
         fa = open(fasta_path, "w")
         fa.write(fasta_header)
         fa.write(fasta_string)
-        fa.write('\n')
+        fa.write("\n")
         fa.close()
         return fasta_path
 
@@ -36,11 +42,7 @@ class FileWriter:
         return complement_sequence
 
     def write_fastq(
-        self,
-        file_path,
-        reads_dictionary,
-        file_name,
-        keys_of_reads_in_target_region,
+        self, file_path, reads_dictionary, file_name, keys_of_reads_in_target_region,
     ):
         fastq1_path = os.path.join(file_path, "fastq", file_name + ".R1.fastq")
         fastq2_path = os.path.join(file_path, "fastq", file_name + ".R2.fastq")

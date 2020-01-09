@@ -1,4 +1,6 @@
 """
+Driver script for TranspoScope.
+
 File: driver.py
 Author: Mark Grivainis
 Email: mark.grivainis@fenyolab.org
@@ -7,333 +9,244 @@ Description: Main entry point for generating files required by the
             visualization
 """
 
-from functools import reduce
+
 import json
-import logging.config
+import logging
 import os
+
 import shutil
 
 from transposcope.bam_handler import BamHandler
 from transposcope.fasta_handler import FastaHandler
 from transposcope.file_writer import FileWriter
 from transposcope.gene_handler import GeneHandler
+from transposcope.initialize import (
+    build_tree,
+    check_paths,
+    create_output_folder_structure,
+    setup_logging,
+)
 from transposcope.insertion import Insertion
-from transposcope.insertion_sites_reader import InsertionSiteReader
-from transposcope.read_classifier import ReadClassifier
+
+# from transposcope.insertion_sites_reader import InsertionSiteReader
+from transposcope.parsers.melt_parser import main as melt_parser
+from transposcope.parsers.tipseqhunter_parser import main as tipseq_parser
+
+# from transposcope.read_classifier import ReadClassifier
 from transposcope.reads_dict import ReadsDict
 from transposcope.realigner import Realigner
 
 
-def setup_logging(path=None, default_level=logging.INFO, env_key="LOG_CFG"):
-    """Setup logging configuration
-
-    """
-    value = os.getenv(env_key, None)
-    if value:
-        path = value
-    if not path:
-        path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "config/logging.json"
-        )
-    if os.path.exists(path):
-        with open(path, "rt") as f:
-            config = json.load(f)
-        logging.config.dictConfig(config)
-
-    else:
-        logging.basicConfig(level=default_level)
+FILE_WRITER = FileWriter()
 
 
-def create_output_folder_structure(
-    output_folder_path, group1, group2, sample_id
-):
-
-    reference_path = os.path.join(
-        output_folder_path,
-        "ref",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
-    )
-
-    track_path = os.path.join(
-        "web",
-        "track",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
-    )
-
-    transposcope_path = os.path.join(
-        "web",
-        "json",
-        "{}".format(group1),
-        "{}".format(group2),
-        "{}".format(sample_id),
-    )
-    if os.path.exists(reference_path):
-        shutil.rmtree(reference_path)
-    if os.path.exists(transposcope_path):
-        shutil.rmtree(transposcope_path)
-    if os.path.exists(track_path):
-        shutil.rmtree(track_path)
-
-    web_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "web/web.zip"
-    )
-    shutil.unpack_archive(web_path)
-
-    os.makedirs(reference_path)
-    os.makedirs(transposcope_path)
-    os.makedirs(track_path)
-    os.mkdir(os.path.join(reference_path, "fasta"))
-    os.mkdir(os.path.join(reference_path, "fastq"))
-    os.mkdir(os.path.join(reference_path, "sam"))
-
-    return reference_path, transposcope_path, track_path
-
-
-def build_tree(path):
-    dir_dict = {}
-    rootdir = path.rstrip(os.sep)
-    found_table_info = False
-    start = rootdir.rfind(os.sep) + 1
-    for path, dirs, files in os.walk(rootdir):
-        folders = path[start:].split(os.sep)
-        subdir = dict()
-        if "table_info.json.gz.txt" in files:
-            found_table_info = True
-        parent = reduce(dict.get, folders[:-1], dir_dict)
-        parent[folders[-1]] = subdir
-    return dir_dict, found_table_info
-
-
-def check_paths(
-    line1_reference_path,
-    reference_genome_folder_path,
-    bam_file_location,
-    insertion_sites_file_path,
-    genes_path,
-):
-    if not os.path.exists(line1_reference_path):
-        raise SystemExit(
-            "\n\nERROR: Mobile Element FASTA file not found '{}'".format(
-                line1_reference_path
-            )
-        )
-    if not os.path.exists(reference_genome_folder_path):
-        raise SystemExit(
-            "\n\nERROR: Reference genome folder not found '{}'".format(
-                reference_genome_folder_path
-            )
-        )
-    if not os.path.exists(bam_file_location):
-        raise SystemExit(
-            "\n\nERROR: BAM file not found '{}'".format(bam_file_location)
-        )
-    if not os.path.exists(insertion_sites_file_path):
-        raise SystemExit(
-            "\n\nERROR: Insertion sites file path invalid: {}".format(
-                insertion_sites_file_path
-            )
-        )
-
-    if genes_path:
-        if not os.path.exists(insertion_sites_file_path):
-            raise SystemExit(
-                "\n\nERROR: refFlat.txt path invalid: {}".format(
-                    insertion_sites_file_path
-                )
-            )
-
-
-def main(args):
-    group1 = args.group1
-    group2 = args.group2
-    sample_id = args.sample_id
-    bam_path = args.bam
-    insertion_list_path = args.index
-    me_ref_path = args.me_reference
-    host_ref_path = args.host_reference
-    genes_file_path = args.genes
-    keep_files = args.keep_files
-
-    # config = get_config_from_file()
-    # TODO - allow for multiple labels
-    #  - eg : pos, unlabeled - pos - negative, pos
-    # TODO - make the reference subdirectories using the writer class
-    check_paths(
-        me_ref_path,
-        host_ref_path,
-        bam_path,
-        insertion_list_path,
-        genes_file_path,
-    )
-    output_folder_path = os.path.join(os.getcwd(), "output")
-    (
-        reference_path,
-        transposcope_path,
-        track_path,
-    ) = create_output_folder_structure(
-        output_folder_path, group1, group2, sample_id
-    )
-
-    setup_logging()
+def log_configuration(args, paths):
     logging.info("***  TranspoScope ***")
     logging.info("### Input ###")
+    logging.info(" - Index File Path: %s", os.path.abspath(args.index))
+    logging.info(" - BAM File Path: %s", os.path.abspath(args.bam))
     logging.info(
-        " - Index File Path: {}".format(os.path.abspath(insertion_list_path))
+        " - Mobile Element Reference File Path: %s", os.path.abspath(args.me_reference),
     )
-    logging.info(" - BAM File Path: {}".format(os.path.abspath(bam_path)))
+    logging.info(" - Host Genome Folder Path: %s", os.path.abspath(args.host_reference))
     logging.info(
-        " - Mobile Element Reference File Path: {}".format(
-            os.path.abspath(me_ref_path)
-        )
-    )
-    logging.info(
-        " - Host Genome Folder Path: {}".format(os.path.abspath(host_ref_path))
-    )
-    logging.info(
-        " - refFlat.txt Path: {}".format(
-            os.path.abspath(genes_file_path)
-            if genes_file_path
-            else "undefined"
-        )
+        " - refFlat.txt Path: %s",
+        os.path.abspath(args.genes) if args.genes else "undefined",
     )
 
-    logging.info(" - Group 1: {}".format(group1))
-    logging.info(" - Group 2: {}".format(group2))
-    logging.info(" - Keep Intermediate Files: {}".format(keep_files))
+    logging.info(" - Group 1: %s", args.group1)
+    logging.info(" - Group 2: %s", args.group2)
+    logging.info(" - Keep Intermediate Files: %s", args.keep_files)
+    logging.info(" - Temp Output Directory: %s", paths.reference_path)
+    logging.info(" - Visualization output directory: %s", paths.transposcope_path)
 
-    insertion_sites_reader = InsertionSiteReader(insertion_list_path)
+
+def process_bam(insertion_type, bam, index):
+
+    if insertion_type.lower() == "melt":
+        input_list = melt_parser(index)
+    elif insertion_type.lower() == "tipseqhunter":
+        input_list = tipseq_parser(index)
+    else:
+        raise TypeError(
+            "{} is not recognized; Should be MELT or TIPseqHunter".format(
+                insertion_type
+            )
+        )
     logging.info("### Processing BAM File ###")
-    bam_handler = BamHandler(bam_path)
-    fasta_handler = FastaHandler(me_ref_path, host_ref_path)
+    bam_handler = BamHandler(bam)
     insertions = []
-    reads_dictionary = {True: ReadsDict(), False: ReadsDict()}
+    reads_dictionary = ReadsDict()
     logging.info(" - Finding Reads in Target Regions")
-    for insertion_stats in insertion_sites_reader.read_lines():
-        temp_insertion = Insertion(named_tuple=insertion_stats)
-        reads_in_region = bam_handler.fetch_reads_in_region(temp_insertion)
-        reads_dictionary[temp_insertion.THREE_PRIME] += reads_in_region
-        temp_insertion.read_keys_in_target_region = reads_in_region.keys()
-        insertions.append(temp_insertion)
+    for parsed_input in input_list:
+        current_insertion = Insertion(parsed_input)
+        reads_in_region = bam_handler.fetch_reads_in_region(current_insertion)
+        reads_dictionary += reads_in_region
+        current_insertion.read_keys_in_target_region = reads_in_region.keys()
+        insertions.append(current_insertion)
     logging.info("    --- DONE ---")
     logging.info(" - Finding Paired Ends")
+    longest_read = 0
     for read in bam_handler.all_reads():
-        if read.query_name in reads_dictionary[True]:
-            reads_dictionary[True].insert(read)
-
-        if read.query_name in reads_dictionary[False]:
-            reads_dictionary[False].insert(read)
+        longest_read = max(read.query_length, longest_read)
+        if read.query_name in reads_dictionary:
+            reads_dictionary.insert(read)
     logging.info("    --- DONE ---")
     logging.info("### Processing Insertions ###")
-    file_writer = FileWriter()
-    realigner = Realigner(reference_path)
-    classifier = ReadClassifier(transposcope_path)
-    if genes_file_path:
-        gene_handler = GeneHandler(genes_file_path)
-    insertions.sort(key=lambda x: x.CHROMOSOME)
-    heading_table = {"Heading": ("ID", "Gene", "Probability"), "data": []}
+    insertions.sort(key=lambda x: x.chromosome)
+    return insertions, reads_dictionary, longest_read
+
+
+def process_insertions(args, paths, insertions, reads_dictionary, longest_read):
+    fasta_handler = FastaHandler(args.me_reference, args.host_reference)
+    realigner = Realigner(paths.reference_path, paths.transposcope_path)
+    if args.genes:
+        gene_handler = GeneHandler(args.genes)
+    # TODO make a separate script for handling the table of insertions
+    # TODO: Add link to UCSC
+    ranking = "Assess" if args.index_type.lower() == "melt" else "Pr"
+    if args.genes:
+        insertion_site_table = {
+            "heading": ("ID", "Gene", ranking),
+            "data": [],
+        }
+    else:
+        insertion_site_table = {
+            "heading": ("ID", ranking),
+            "data": [],
+        }
 
     ten_percent = len(insertions) / 10
     next_log = ten_percent
     completed = 0
     for insertion in insertions:
-        file_name = "{i.CHROMOSOME}_{i.START}-{i.END}".format(i=insertion)
-        insertion.fasta_string = fasta_handler.generate_fasta_sequence(
-            insertion
+        file_name = "{i.chromosome}_{i.insertion_site}".format(i=insertion)
+        insertion.all_info["read_length"] = longest_read
+        # TODO: Write out the length of the longest read
+        FILE_WRITER.write_json(
+            os.path.join(paths.transposcope_path, "meta", file_name), insertion.all_info
         )
 
-        fasta_path = file_writer.write_fasta(
-            reference_path,
+        insertion.fasta_string = fasta_handler.generate_fasta_sequence(insertion)
+
+        fasta_path = FILE_WRITER.write_fasta(
+            paths.transposcope_path,
             file_name,
             insertion.fasta_string,
-            ">{i.CHROMOSOME}_{i.START}-{i.END}\n".format(i=insertion),
+            ">{i.chromosome}_{i.insertion_site}\n".format(i=insertion),
         )
-        fastq1_path, fastq2_path = file_writer.write_fastq(
-            reference_path,
-            reads_dictionary[insertion.THREE_PRIME],
+        fastq1_path, fastq2_path = FILE_WRITER.write_fastq(
+            paths.reference_path,
+            reads_dictionary,
             file_name,
             insertion.read_keys_in_target_region,
         )
-        sorted_bam_path = realigner.realign(
-            fasta_path, fastq1_path, fastq2_path, file_name
-        )
+        realigner.realign(fasta_path, fastq1_path, fastq2_path, file_name)
 
-        # TODO - add the option to not add gene information
-        if genes_file_path:
+        if args.genes:
             gene_info = gene_handler.find_nearest_gene(
-                insertion.CHROMOSOME, insertion.INSERTION_SITE
+                insertion.chromosome, insertion.insertion_site
+            )
+
+            insertion_site_table["data"].append(
+                [
+                    "{}:{}".format(insertion.chromosome, insertion.insertion_site),
+                    gene_info,
+                    "{:.2f}".format(float(insertion.pred)),
+                ]
             )
         else:
-            gene_info = ("undefined", "rgb(3, 119, 190)")
-
-        # heading_table['Data']\
-        if insertion.THREE_PRIME:
-            end = "3"
-        else:
-            end = "5"
-        heading_table["data"].append(
-            [
-                "{}-{}({})".format(
-                    insertion.CHROMOSOME, insertion.CLIP_START, end
-                ),
-                gene_info,
-                "{:.2f}".format(insertion.PRED),
-            ]
-        )
-        classifier.classify_insertion(insertion, sorted_bam_path)
+            insertion_site_table["data"].append(
+                [
+                    "{}:{}".format(insertion.chromosome, insertion.insertion_site),
+                    "{:.2f}".format(float(insertion.pred)),
+                ]
+            )
 
         completed += 1
         if completed > next_log:
             logging.info(
-                " - Percentage of insertions processed: {:.2%}.".format(
+                " ├ Percentage of insertions processed: {:.2%}.".format(
                     completed / len(insertions)
                 )
             )
             next_log += ten_percent
+    return insertion_site_table
+
+
+def main(args):
+    """
+    Main script which drives the alignment process.
+
+    @param args:  list of command line argumnents provided when the script was
+    called
+    @type  args:  tuple
+
+    @return:  None
+    @rtype :  None
+
+    @raise e:  None
+    """
+    # # TODO - allow for multiple labels
+    # #  - eg : pos, unlabeled - pos - negative, pos
+    # # TODO - make the reference subdirectories using the writer class
+
+    check_paths(args)
+    output_folder_path = os.path.join(os.getcwd(), "output")
+    paths = create_output_folder_structure(output_folder_path, args)
+
+    setup_logging()
+    log_configuration(args, paths)
+
+    insertions, reads_dictionary, longest_read = process_bam(
+        args.index_type, args.bam, args.index
+    )
+
+    insertion_site_table = process_insertions(
+        args, paths, insertions, reads_dictionary, longest_read
+    )
+
     #     TODO - write out index file
     logging.info("    --- DONE ---")
-    if not keep_files:
+    if not args.keep_files:
         logging.info("### Cleanup ###")
-        logging.info(
-            "Cleaning up generated files in {}".format(reference_path)
-        )
-        if os.path.exists(reference_path):
-            shutil.rmtree(os.path.dirname(reference_path))
+        logging.info("Cleaning up generated files in %s", paths.reference_path)
+        if os.path.exists(paths.reference_path):
+            shutil.rmtree(paths.reference_path)
         logging.info("    --- DONE ---")
 
-    logging.info("### Building Bed File ###")
-    with open(os.path.join(track_path, "{}.bb".format(sample_id)), "w") as fh:
-        for insertion in insertions:
-            fh.write(
-                "{}\t{}\t{}\n".format(
-                    insertion.CHROMOSOME,
-                    insertion.CLIP_START,
-                    insertion.CLIP_END,
-                )
-            )
-    logging.info("    --- DONE ---")
+    # TODO: Currently these bed files would need to be converted into a bigbed file to work correctly
+    # TODO: Figure out how to load these files from github or a private server (this will mostly be front end code)
+    # logging.info("### Building Bed File ###")
+    # with open(
+    #     os.path.join(paths.track_path, "{}.bb".format(args.sample_id)), "w"
+    # ) as file_handle:
+    #     for insertion in insertions:
+    #         file_handle.write(
+    #             "{}\t{}\t{}\n".format(
+    #                 insertion.chromosome,
+    #                 insertion.five_prime_target,
+    #                 insertion.three_prime_target,
+    #             )
+    #         )
+    # logging.info("    --- DONE ---")
     logging.info("### Building Website ###")
 
     web_dir = os.path.join(os.getcwd(), "web")
 
-    logging.info(" The website is being built into: {}".format(web_dir))
+    logging.info("### The website is being built into: %s", web_dir)
 
-    file_writer.write_json(
-        os.path.join(transposcope_path, "table_info.json.gz.txt"),
-        heading_table,
+    FILE_WRITER.write_json(
+        os.path.join(paths.transposcope_path, "table_info"), insertion_site_table,
     )
 
-    tree, found_table = build_tree(os.path.join(web_dir, "json"))
+    tree, found_table = build_tree(os.path.join(web_dir, "data"))
 
     with open(os.path.join(web_dir, "manifest.json"), "w") as json_file:
-        json.dump(tree["json"], json_file)
+        json.dump(tree["data"], json_file)
     logging.info("    --- DONE ---")
 
     logging.info(
-        " to view the generated files in your browser run:\n\t\t'transposcope view {}'".format(
-            web_dir
-        )
+        " to view the generated files in your browser run:\n\t\t'transposcope view %s'",
+        web_dir,
     )

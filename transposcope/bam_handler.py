@@ -1,5 +1,4 @@
 import logging
-from collections import defaultdict
 from functools import reduce
 
 import pysam
@@ -21,14 +20,27 @@ class BamHandler:
         )
 
     def fetch_reads_in_region(self, insertion):
-        reads = defaultdict(list)
-        for read in self.BAM_FILE.fetch(
-            reference=insertion.CHROMOSOME,
-            start=insertion.START,
-            end=insertion.END,
-        ):
-            if not read.flag & (0x800 | 0x100):
-                reads[read.query_name].insert(read.is_read2, read)
+        reads = {}
+        if insertion.five_prime_target:
+            for read in self.BAM_FILE.fetch(
+                reference=insertion.chromosome,
+                start=insertion.five_prime_target[0],
+                end=insertion.five_prime_target[1],
+            ):
+                if not read.flag & (0x800 | 0x100):
+                    if read.query_name not in reads:
+                        reads[read.query_name] = [None, None]
+                    reads[read.query_name][read.is_read2] = read
+        if insertion.three_prime_target:
+            for read in self.BAM_FILE.fetch(
+                reference=insertion.chromosome,
+                start=insertion.three_prime_target[0],
+                end=insertion.three_prime_target[1],
+            ):
+                if not read.flag & (0x800 | 0x100):
+                    if read.query_name not in reads:
+                        reads[read.query_name] = [None, None]
+                    reads[read.query_name][read.is_read2] = read
         return dict(reads)
 
     def all_reads(self):
@@ -40,8 +52,13 @@ class BamHandler:
             completed += 1
             if completed > next_log:
                 logging.info(
-                    "   - Percentage of BAM file processed: {:.2%}.".format(
+                    "   ├ Percentage of BAM file processed: {:.2%}.".format(
                         completed / self.num_reads_in_bam
                     )
                 )
                 next_log += ten_percent
+        logging.info(
+            "   ├ Percentage of BAM file processed: {:.2%}.".format(
+                completed / self.num_reads_in_bam
+            )
+        )

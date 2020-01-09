@@ -7,6 +7,7 @@ Description: Parser which extracts relavant data from MELT vcf files and
              outputs a tab delimited file usable by TranspoScope.
 """
 
+from collections import namedtuple
 import os
 import re
 import sys
@@ -54,9 +55,7 @@ def parse_meta_info(melt_file_handler):
                 meta_data[key][current_id]["length"] = chrom_length.group(1)
             description = re.search(r'Description="([^"]+)', value.strip("<>"))
             if description:
-                (
-                    meta_data[key][current_id]["Description"]
-                ) = description.group(1)
+                (meta_data[key][current_id]["Description"]) = description.group(1)
                 number = re.search(r"Number=([^,]+)", value.strip("<>"))
             if number:
                 meta_data[key][current_id]["Number"] = number.group(1)
@@ -103,8 +102,7 @@ def parse_vcf_content(melt_file_handler, header):
     for line in melt_file_handler:
         contents.append(parse_row(line.split(), header))
         contents[-1]["INFO"] = {
-            x.split("=")[0]: x.split("=")[1]
-            for x in contents[-1]["INFO"].split(";")
+            x.split("=")[0]: x.split("=")[1] for x in contents[-1]["INFO"].split(";")
         }
     return contents
 
@@ -129,61 +127,81 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
 
     @raise e:  Description
     """
-    formated_table = [
-        [
-            "chromosome",
-            "target_start",
-            "target_end",
-            "clip_start",
-            "clip_end",
-            "strand",
-            "pred",
-            "three_prime_end",
-            "enzyme_cut_sites",
-            "me_start",
-            "me_end",
-        ]
-    ]
+    formated_table = []
     for row_data in extracted_vcf_data:
+        # NOTE: The insertion starts at the base following POS
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
-        assess = row_data["INFO"]["ASSESS"]
+        start_me = int(start_me)
+        end_me = int(end_me)
+
+        TSD = row_data["INFO"]["TSD"]
+        tsd_offset = 0
+        if TSD[0] == "d":
+            TSD = TSD[1:]
+            tsd_offset = len(TSD)
+
+        TSD_WIDTH = len(TSD) if TSD != "null" else 0
+
+        asses = row_data["INFO"]["ASSESS"]
+
+        # when undetermined the start is set to -1 which breaks offsets
+        start_me = max(0, start_me)
+
+        me_width = int(end_me) - int(start_me)
+
+        regions = [
+            {"name": "5P Insertion Site", "x": [target_width, 1], "color": "#0000FF"},
+            {
+                "name": "3P Insertion Site",
+                "x": [target_width + me_width - 1, 1],
+                "color": "#0000FF",
+            },
+        ]
+        if TSD_WIDTH:
+            regions.append(
+                {
+                    "name": "5P TSD",
+                    "x": [target_width - TSD_WIDTH, TSD_WIDTH],
+                    "color": "#48c2e0",
+                }
+            )
+            regions.append(
+                {
+                    "name": "3P TSD",
+                    "x": [target_width + me_width, TSD_WIDTH],
+                    "color": "#48c2e0",
+                },
+            )
         if strand_me == "null":
-            # TODO - write a better format string
+            # TODO - write a better format string and use logger
             print("WARNING - strand is not specified:", row_data)
         else:
-            result_1 = [
+            result = [
                 row_data["CHROM"],
-                int(row_data["POS"]) - target_width,
-                int(row_data["POS"]),
-                int(row_data["POS"]),
-                int(row_data["POS"]),
+                (
+                    # tsd_offset ensures that the 5p target always ends with any TSDs
+                    int(row_data["POS"]) - target_width + tsd_offset,  # 5' start
+                    int(row_data["POS"]) + tsd_offset,
+                ),  # 5' end
+                (
+                    int(row_data["POS"]) + tsd_offset,  # 3' start
+                    int(row_data["POS"]) + target_width + tsd_offset,
+                ),  # 3' end
+                TSD_WIDTH,  # TSD
                 strand_me,
-                assess,
-                strand_me == "-",
-                "",
-                int(start_me) - 1,
-                int(end_me) + 1,
+                start_me,
+                end_me,
+                asses,
+                regions,
+                "melt",
+                row_data["INFO"],
             ]
-            formated_table.append(result_1)
-            result_2 = [
-                row_data["CHROM"],
-                int(row_data["POS"]) + 1,
-                int(row_data["POS"]) + 1 + target_width,
-                int(row_data["POS"]) + 1,
-                int(row_data["POS"]) + 1,
-                strand_me,
-                assess,
-                strand_me != "-",
-                "",
-                int(start_me) - 1,
-                int(end_me) + 1,
-            ]
-            formated_table.append(result_2)
+            formated_table.append(result)
     return formated_table
 
 
 def main(filepath):
-    """Main entry point for converting MELT output into TranspoScope input.
+    """Convert MELT output into TranspoScope input.
 
     @param filepath:  Path to the MELT output file
     @type  param:  str
@@ -197,13 +215,32 @@ def main(filepath):
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
 
-    with open("./TS_{}.tab".format(file_name), "w") as file:
-        for row in parsed_table:
-            file.write("\t".join([str(x) for x in list(row)]) + "\n")
-    print("Created input file:\nTS_{}.tab".format(file_name))
+    row_tuple = namedtuple(
+        "insertion",
+        [
+            "chromosome",
+            "target_5p",
+            "target_3p",
+            "window",
+            "me_strand",
+            "me_start",
+            "me_end",
+            "pred",
+            "regions",
+            "type",
+            "info",
+        ],
+    )
+    for row in parsed_table:
+        yield row_tuple(*row)
 
 
 if __name__ == "__main__":
     FILENAME = sys.argv[1] if len(sys.argv) > 1 else None
     if FILENAME:
-        main(FILENAME)
+        count = 0
+        for i in main(FILENAME):
+            print(i)
+            count += 1
+            if count == 9:
+                break

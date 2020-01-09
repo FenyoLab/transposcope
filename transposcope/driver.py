@@ -1,4 +1,6 @@
 """
+Driver script for TranspoScope.
+
 File: driver.py
 Author: Mark Grivainis
 Email: mark.grivainis@fenyolab.org
@@ -6,6 +8,7 @@ Github: https://github.com/MarkGrivainis
 Description: Main entry point for generating files required by the
             visualization
 """
+
 
 import json
 import logging
@@ -27,6 +30,7 @@ from transposcope.insertion import Insertion
 
 # from transposcope.insertion_sites_reader import InsertionSiteReader
 from transposcope.parsers.melt_parser import main as melt_parser
+from transposcope.parsers.tipseqhunter_parser import main as tipseq_parser
 
 # from transposcope.read_classifier import ReadClassifier
 from transposcope.reads_dict import ReadsDict
@@ -57,11 +61,20 @@ def log_configuration(args, paths):
     logging.info(" - Visualization output directory: %s", paths.transposcope_path)
 
 
-def process_bam(bam, index):
+def process_bam(insertion_type, bam, index):
+
+    if insertion_type.lower() == "melt":
+        input_list = melt_parser(index)
+    elif insertion_type.lower() == "tipseqhunter":
+        input_list = tipseq_parser(index)
+    else:
+        raise TypeError(
+            "{} is not recognized; Should be MELT or TIPseqHunter".format(
+                insertion_type
+            )
+        )
     logging.info("### Processing BAM File ###")
     bam_handler = BamHandler(bam)
-    # TODO - Add a tipseq parser; choose using an argument
-    input_list = melt_parser(index)
     insertions = []
     reads_dictionary = ReadsDict()
     logging.info(" - Finding Reads in Target Regions")
@@ -73,35 +86,43 @@ def process_bam(bam, index):
         insertions.append(current_insertion)
     logging.info("    --- DONE ---")
     logging.info(" - Finding Paired Ends")
+    longest_read = 0
     for read in bam_handler.all_reads():
+        longest_read = max(read.query_length, longest_read)
         if read.query_name in reads_dictionary:
             reads_dictionary.insert(read)
-
     logging.info("    --- DONE ---")
     logging.info("### Processing Insertions ###")
     insertions.sort(key=lambda x: x.chromosome)
-    return insertions, reads_dictionary
+    return insertions, reads_dictionary, longest_read
 
 
-def process_insertions(args, paths, insertions, reads_dictionary):
+def process_insertions(args, paths, insertions, reads_dictionary, longest_read):
     fasta_handler = FastaHandler(args.me_reference, args.host_reference)
     realigner = Realigner(paths.reference_path, paths.transposcope_path)
     if args.genes:
         gene_handler = GeneHandler(args.genes)
     # TODO make a separate script for handling the table of insertions
     # TODO: Add link to UCSC
-    insertion_site_table = {
-        "heading": ("ID", "Gene", "Probability"),
-        "data": [],
-    }
+    ranking = "Assess" if args.index_type.lower() == "melt" else "Pr"
+    if args.genes:
+        insertion_site_table = {
+            "heading": ("ID", "Gene", ranking),
+            "data": [],
+        }
+    else:
+        insertion_site_table = {
+            "heading": ("ID", ranking),
+            "data": [],
+        }
 
     ten_percent = len(insertions) / 10
     next_log = ten_percent
     completed = 0
     for insertion in insertions:
-
         file_name = "{i.chromosome}_{i.insertion_site}".format(i=insertion)
-
+        insertion.all_info["read_length"] = longest_read
+        # TODO: Write out the length of the longest read
         FILE_WRITER.write_json(
             os.path.join(paths.transposcope_path, "meta", file_name), insertion.all_info
         )
@@ -126,20 +147,26 @@ def process_insertions(args, paths, insertions, reads_dictionary):
             gene_info = gene_handler.find_nearest_gene(
                 insertion.chromosome, insertion.insertion_site
             )
-        else:
-            gene_info = ("undefined", "rgb(3, 119, 190)")
 
-        insertion_site_table["data"].append(
-            [
-                "{}-{}".format(insertion.chromosome, insertion.insertion_site),
-                gene_info,
-                "{:.2f}".format(insertion.pred),
-            ]
-        )
+            insertion_site_table["data"].append(
+                [
+                    "{}:{}".format(insertion.chromosome, insertion.insertion_site),
+                    gene_info,
+                    "{:.2f}".format(float(insertion.pred)),
+                ]
+            )
+        else:
+            insertion_site_table["data"].append(
+                [
+                    "{}:{}".format(insertion.chromosome, insertion.insertion_site),
+                    "{:.2f}".format(float(insertion.pred)),
+                ]
+            )
+
         completed += 1
         if completed > next_log:
             logging.info(
-                " - Percentage of insertions processed: {:.2%}.".format(
+                " ├ Percentage of insertions processed: {:.2%}.".format(
                     completed / len(insertions)
                 )
             )
@@ -148,7 +175,8 @@ def process_insertions(args, paths, insertions, reads_dictionary):
 
 
 def main(args):
-    """Main script which drives the alignment process
+    """
+    Main script which drives the alignment process.
 
     @param args:  list of command line argumnents provided when the script was
     called
@@ -159,10 +187,10 @@ def main(args):
 
     @raise e:  None
     """
-
     # # TODO - allow for multiple labels
     # #  - eg : pos, unlabeled - pos - negative, pos
     # # TODO - make the reference subdirectories using the writer class
+
     check_paths(args)
     output_folder_path = os.path.join(os.getcwd(), "output")
     paths = create_output_folder_structure(output_folder_path, args)
@@ -170,9 +198,13 @@ def main(args):
     setup_logging()
     log_configuration(args, paths)
 
-    insertions, reads_dictionary = process_bam(args.bam, args.index)
+    insertions, reads_dictionary, longest_read = process_bam(
+        args.index_type, args.bam, args.index
+    )
 
-    insertion_site_table = process_insertions(args, paths, insertions, reads_dictionary)
+    insertion_site_table = process_insertions(
+        args, paths, insertions, reads_dictionary, longest_read
+    )
 
     #     TODO - write out index file
     logging.info("    --- DONE ---")
@@ -180,23 +212,24 @@ def main(args):
         logging.info("### Cleanup ###")
         logging.info("Cleaning up generated files in %s", paths.reference_path)
         if os.path.exists(paths.reference_path):
-            # TODO: make sure that this does not remove the entire output path
-            shutil.rmtree(os.path.dirname(paths.reference_path))
+            shutil.rmtree(paths.reference_path)
         logging.info("    --- DONE ---")
 
-    logging.info("### Building Bed File ###")
-    with open(
-        os.path.join(paths.track_path, "{}.bb".format(args.sample_id)), "w"
-    ) as file_handle:
-        for insertion in insertions:
-            file_handle.write(
-                "{}\t{}\t{}\n".format(
-                    insertion.chromosome,
-                    insertion.five_prime_target,
-                    insertion.three_prime_target,
-                )
-            )
-    logging.info("    --- DONE ---")
+    # TODO: Currently these bed files would need to be converted into a bigbed file to work correctly
+    # TODO: Figure out how to load these files from github or a private server (this will mostly be front end code)
+    # logging.info("### Building Bed File ###")
+    # with open(
+    #     os.path.join(paths.track_path, "{}.bb".format(args.sample_id)), "w"
+    # ) as file_handle:
+    #     for insertion in insertions:
+    #         file_handle.write(
+    #             "{}\t{}\t{}\n".format(
+    #                 insertion.chromosome,
+    #                 insertion.five_prime_target,
+    #                 insertion.three_prime_target,
+    #             )
+    #         )
+    # logging.info("    --- DONE ---")
     logging.info("### Building Website ###")
 
     web_dir = os.path.join(os.getcwd(), "web")

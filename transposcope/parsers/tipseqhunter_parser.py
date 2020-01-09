@@ -7,6 +7,8 @@ Description: A parser which converts TIPseqHunter REPRED files into
             the tab delimited format required for TranspoScope
 """
 
+from collections import namedtuple
+import logging
 import os
 import sys
 
@@ -14,11 +16,7 @@ import pandas as pd
 
 
 def calculate_orientation(
-    index: int,
-    clip_start: int,
-    clip_end: int,
-    target_start: int,
-    target_end: int,
+    index: int, clip_start: int, clip_end: int, target_start: int, target_end: int,
 ) -> str:
     """
     Calculate the orientation of the insertion. The clip start and end should
@@ -42,9 +40,7 @@ def calculate_orientation(
         return "+"
     if clip_center > target_center:
         return "-"
-    raise ValueError(
-        "Repred orientation cannot be determined in row {}".format(index)
-    )
+    raise ValueError("Repred orientation cannot be determined in row {}".format(index))
 
 
 def load_repred(filepath: str) -> pd.DataFrame:
@@ -162,17 +158,66 @@ def main(filepath: str):
     :param path:  output path
     :type  path:  str
     """
-
     file_name = filepath.split("/")[-1].split(".")[0]
     repred_df = load_repred(filepath)
-    if validate_repred(repred_df):
-        print("Repred is valid")
+    # TODO: Rase error if not valid repred file
+    # if validate_repred(repred_df):
+    #     logging.info(" - Repred is valid")
 
     repred_df = convert_dataframe(repred_df)
-    repred_df.sort_values(by=["chromosome"]).to_csv(
-        "TS_{}.tab".format(file_name), sep="\t", index=False
+    row_tuple = namedtuple(
+        "insertion",
+        [
+            "chromosome",
+            "target_5p",
+            "target_3p",
+            "window",
+            "me_strand",
+            "me_start",
+            "me_end",
+            "pred",
+            "regions",
+            "type",
+            "info",
+        ],
     )
-    print("Created input file:\nTS_{}.tab".format(file_name))
+    for row in repred_df.itertuples(index=False):
+        if row.strand == "+":
+            orientation = 1
+            ins_site = row.me_end - row.me_start
+        else:
+            orientation = -1
+            ins_site = row.clip_end - row.target_start
+        orientation = -1 if row.strand == "-" else 1
+        regions = [
+            {"name": e, "x": [orientation * int(x) + ins_site, 1], "color": "#FF0000"}
+            for e, x in (cs.split("-") for cs in row.enzyme_cut_sites.split(":"))
+        ]
+        regions.append(
+            {
+                "name": "Clipping Region",
+                "x": [ins_site, row.clip_end - row.clip_start],
+                "color": "#0000FF",
+            }
+        )
+        tmp = [
+            row.chromosome,
+            (row.target_start, row.clip_end - 1) if row.strand == "-" else None,
+            (row.clip_start - 1, row.target_end) if row.strand == "+" else None,
+            row.clip_end - row.clip_start,
+            row.strand,
+            row.me_start,
+            row.me_end,
+            row.pred,
+            regions,
+            "tipseq",
+            row,
+        ]
+        yield row_tuple(*tmp)
+    # repred_df.sort_values(by=["chromosome"]).to_csv(
+    #     "TS_{}.tab".format(file_name), sep="\t", index=False
+    # )
+    # print("Created input file:\nTS_{}.tab".format(file_name))
 
 
 if __name__ == "__main__":
@@ -181,4 +226,4 @@ if __name__ == "__main__":
     PATH = os.getcwd()
 
     if FILENAME:
-        main(FILENAME, PATH)
+        main(PATH)

@@ -55,13 +55,7 @@ def parse_meta_info(melt_file_handler):
                 meta_data[key][current_id]["length"] = chrom_length.group(1)
             description = re.search(r'Description="([^"]+)', value.strip("<>"))
             if description:
-<<<<<<< HEAD
                 (meta_data[key][current_id]["Description"]) = description.group(1)
-=======
-                (
-                    meta_data[key][current_id]["Description"]
-                ) = description.group(1)
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
                 number = re.search(r"Number=([^,]+)", value.strip("<>"))
             if number:
                 meta_data[key][current_id]["Number"] = number.group(1)
@@ -137,18 +131,47 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
     for row_data in extracted_vcf_data:
         # NOTE: The insertion starts at the base following POS
         name_me, start_me, end_me, strand_me = _find_strand(row_data["INFO"])
+        start_me = int(start_me)
+        end_me = int(end_me)
 
-<<<<<<< HEAD
-        TSD = row_data["INFO"]["TSD"] if row_data["INFO"]["TSD"] != "null" else ""
-=======
-        TSD = (
-            row_data["INFO"]["TSD"]
-            if row_data["INFO"]["TSD"] != "null"
-            else ""
-        )
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
+        TSD = row_data["INFO"]["TSD"]
+        tsd_offset = 0
+        if TSD[0] == "d":
+            TSD = TSD[1:]
+            tsd_offset = len(TSD)
 
-        assess = row_data["INFO"]["ASSESS"]
+        TSD_WIDTH = len(TSD) if TSD != "null" else 0
+
+        asses = row_data["INFO"]["ASSESS"]
+
+        # when undetermined the start is set to -1 which breaks offsets
+        start_me = max(0, start_me)
+
+        me_width = int(end_me) - int(start_me)
+
+        regions = [
+            {"name": "5P Insertion Site", "x": [target_width, 1], "color": "#0000FF"},
+            {
+                "name": "3P Insertion Site",
+                "x": [target_width + me_width - 1, 1],
+                "color": "#0000FF",
+            },
+        ]
+        if TSD_WIDTH:
+            regions.append(
+                {
+                    "name": "5P TSD",
+                    "x": [target_width - TSD_WIDTH, TSD_WIDTH],
+                    "color": "#48c2e0",
+                }
+            )
+            regions.append(
+                {
+                    "name": "3P TSD",
+                    "x": [target_width + me_width, TSD_WIDTH],
+                    "color": "#48c2e0",
+                },
+            )
         if strand_me == "null":
             # TODO - write a better format string and use logger
             print("WARNING - strand is not specified:", row_data)
@@ -156,59 +179,29 @@ def retrieve_required_data(extracted_vcf_data, target_width=1000):
             result = [
                 row_data["CHROM"],
                 (
-                    int(row_data["POS"]) - target_width,  # 5' start
-                    int(row_data["POS"]),
+                    # tsd_offset ensures that the 5p target always ends with any TSDs
+                    int(row_data["POS"]) - target_width + tsd_offset,  # 5' start
+                    int(row_data["POS"]) + tsd_offset,
                 ),  # 5' end
                 (
-                    int(row_data["POS"]),  # 3' start
-                    int(row_data["POS"]) + target_width,
+                    int(row_data["POS"]) + tsd_offset,  # 3' start
+                    int(row_data["POS"]) + target_width + tsd_offset,
                 ),  # 3' end
-                len(TSD),  # TSD
+                TSD_WIDTH,  # TSD
                 strand_me,
-                int(start_me),
-                int(end_me),
+                start_me,
+                end_me,
+                asses,
+                regions,
+                "melt",
                 row_data["INFO"],
             ]
-<<<<<<< HEAD
-=======
-            # result_1 = [
-            #     row_data["CHROM"],
-            #     int(row_data["POS"]) - target_width,
-            #     int(row_data["POS"]),
-            #     int(row_data["POS"]),
-            #     int(row_data["POS"]),
-            #     strand_me,
-            #     assess,
-            #     strand_me == "-",
-            #     "",
-            #     int(start_me) - 1,
-            #     int(end_me) + 1,
-            # ]
-            # formated_table.append(result_1)
-            # result_2 = [
-            #     row_data["CHROM"],
-            #     int(row_data["POS"]) + 1,
-            #     int(row_data["POS"]) + 1 + target_width,
-            #     int(row_data["POS"]) + 1,
-            #     int(row_data["POS"]) + 1,
-            #     strand_me,
-            #     assess,
-            #     strand_me != "-",
-            #     "",
-            #     int(start_me) - 1,
-            #     int(end_me) + 1,
-            # ]
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
             formated_table.append(result)
     return formated_table
 
 
 def main(filepath):
-<<<<<<< HEAD
     """Convert MELT output into TranspoScope input.
-=======
-    """Main entry point for converting MELT output into TranspoScope input.
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
 
     @param filepath:  Path to the MELT output file
     @type  param:  str
@@ -221,6 +214,7 @@ def main(filepath):
     _, header = parse_meta_info(file_handler)
     insertions = parse_vcf_content(file_handler, header)
     parsed_table = retrieve_required_data(insertions)
+
     row_tuple = namedtuple(
         "insertion",
         [
@@ -231,22 +225,22 @@ def main(filepath):
             "me_strand",
             "me_start",
             "me_end",
+            "pred",
+            "regions",
+            "type",
             "info",
         ],
     )
-    for row in parsed_table[:10]:
+    for row in parsed_table:
         yield row_tuple(*row)
 
-<<<<<<< HEAD
-=======
-    # with open("./TS_{}.tab".format(file_name), "w") as file:
-    #     for row in parsed_table:
-    #         file.write("\t".join([str(x) for x in list(row)]) + "\n")
-    # print("Created input file:\nTS_{}.tab".format(file_name))
-
->>>>>>> 65e593f624b3ac5dfee6376df13a6174f8da00a8
 
 if __name__ == "__main__":
     FILENAME = sys.argv[1] if len(sys.argv) > 1 else None
     if FILENAME:
-        main(FILENAME)
+        count = 0
+        for i in main(FILENAME):
+            print(i)
+            count += 1
+            if count == 9:
+                break

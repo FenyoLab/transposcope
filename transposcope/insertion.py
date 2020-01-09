@@ -2,22 +2,30 @@ import json
 
 
 class Insertion:
-    # TODO: Define MetaData using this class
-    def __init__(self, named_tuple):
-        # TODO - Make sure that these variables are needed
+    """A class which holds the coordinates and meta data for each insertion
+
+    :param insertion_data: A preformated named tuple containing information regarding an insertion
+    :type named tuple
+    
+    """
+
+    def __init__(self, insertion_data):
         self.five_prime_sequence = ""
         self.three_prime_sequence = ""
         self.me_sequence = ""
 
-        self.chromosome = named_tuple.chromosome
-        self.five_prime_target = named_tuple.target_5p  # start and end coordinate
-        self.three_prime_target = named_tuple.target_3p
-        self.insertion_window = named_tuple.window
-        self.strand = named_tuple.me_strand
-        self.all_info = named_tuple._asdict()
-        self.me_start = named_tuple.me_start - 1
-        self.me_end = named_tuple.me_end
-        self.pred = -1
+        self.longest_read = None
+
+        self.chromosome = insertion_data.chromosome
+        self.five_prime_target = insertion_data.target_5p  # start and end coordinate
+        self.three_prime_target = insertion_data.target_3p
+        self.insertion_window = insertion_data.window
+        self.strand = insertion_data.me_strand
+        self.all_info = insertion_data._asdict()
+        self.me_start = insertion_data.me_start
+        self.me_end = insertion_data.me_end
+        self.type = insertion_data.type
+        self.pred = insertion_data.pred
 
         self.read_keys_in_target_region = None
 

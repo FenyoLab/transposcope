@@ -33,13 +33,13 @@ https://github.com/FenyoLab/transposcope/wiki
 This example shows strong evidence as there are ~800 bridging reads where one read aligns to the reference sequence and the pair aligns to the LINE-1 reference.
 
 
-[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr1-113888412)
+[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-113888412)
 
 
 ##### An example showing less evidence of the insertion being real
 This example is more difficult to classify as there is only one bridging reads and 10 junction reads supporting the insertion.
 
-[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr1-121142693)
+[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-121142693)
 
 
 #### Whole Genome Sequencing Examples

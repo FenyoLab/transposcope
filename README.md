@@ -25,6 +25,9 @@ Alternatively, transposcope can be installed into the current conda environment 
 conda install transposcope
 ```
 
+### For more detailed usage instructions and examples please use the Wiki.
+https://github.com/FenyoLab/transposcope/wiki
+
 #### TIPseq Examples
 ##### An example showing strong evidence of an insertion
 This example shows strong evidence as there are ~800 bridging reads where one read aligns to the reference sequence and the pair aligns to the LINE-1 reference.
@@ -49,7 +52,3 @@ This example shows strong evidence of there being an insertion. There are many b
 This example shows little evidence that there really is an insertion at this locus. Junction reads on the 5' flaning side match 3 bases of the proposed LINE-1 reference sequence with no other matches.
 
 [interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr2-159882972)
-
-
-### For more detailed usage instructions and examples please use the Wiki.
-https://github.com/FenyoLab/transposcope/wiki

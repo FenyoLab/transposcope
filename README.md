@@ -28,6 +28,9 @@ conda install transposcope
 ### For more detailed usage instructions and examples, please use the Wiki.
 https://github.com/FenyoLab/transposcope/wiki
 
+## Compatibility
+TranspoScope has been tested on Linux and OSX. Realignment is not possible using regular conda on Windows as the Samtools conda package is not available on this platform.
+Viewing files which are hosted online will work on any operating system as long as a modern web browser is used.
 
 ## Examples of the Resulting Visualizations
 #### TIPseq Examples

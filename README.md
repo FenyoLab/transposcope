@@ -48,7 +48,7 @@ This example is more difficult to classify as there are only one bridging reads 
 
 [![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki/images/tipseq_unlikely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-121142693)
 
-[Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr1-121142693)
+[Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-121142693)
 
 
 #### Whole Genome Sequencing Examples

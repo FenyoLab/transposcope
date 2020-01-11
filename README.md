@@ -29,7 +29,7 @@ conda install transposcope
 https://github.com/FenyoLab/transposcope/wiki
 
 
-## Examples
+## Examples of the Resulting Visualizations
 #### TIPseq Examples
 ##### An example showing strong evidence of an insertion
 This example shows strong evidence as there are ~800 bridging reads where one read aligns with the reference sequence, and the pair aligns with the LINE-1 reference.

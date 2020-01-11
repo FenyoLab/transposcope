@@ -33,22 +33,30 @@ https://github.com/FenyoLab/transposcope/wiki
 This example shows strong evidence as there are ~800 bridging reads where one read aligns with the reference sequence, and the pair aligns with the LINE-1 reference.
 
 
-[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-113888412)
+[![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki//images/tipseq_likely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr1-113888412)
+
+[Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-113888412)
 
 
 ##### An example showing less evidence of the insertion being real
 This example is more difficult to classify as there are only one bridging reads and 10 junction reads supporting the insertion.
 
-[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-121142693)
+[![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki/images/tipseq_unlikely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-121142693)
+
+[Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr1-121142693)
 
 
 #### Whole Genome Sequencing Examples
 ##### An example showing strong evidence of an insertion
 This example shows strong evidence of there being an insertion. There are many bridging reads on both the 3' and 5' ends of the insertion, as well as many junction reads, which match the proposed LINE-1 reference sequence.
 
-[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr11-94951204)
+[![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki//images/wgs_likely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr11-94951204)
+
+[Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr11-94951204)
 
 ##### An example showing almost no evidence of an insertion
 This example shows little evidence that there really is an insertion at this locus. Junction reads on the 5' flanking side match 3 bases of the proposed LINE-1 reference sequence with no other matches.
 
-[interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr2-159882972)
+[![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki//images/wgs_unlikely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr2-159882972)
+
+[Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr2-159882972)

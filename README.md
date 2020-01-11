@@ -35,7 +35,7 @@ https://github.com/FenyoLab/transposcope/wiki
 This example shows strong evidence as there are ~800 bridging reads where one read aligns with the reference sequence, and the pair aligns with the LINE-1 reference.
 
 
-[![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki//images/tipseq_likely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/melt_full?locus=chr1-113888412)
+[![Likely Insertion](https://github.com/FenyoLab/transposcope/wiki//images/tipseq_likely_insertion.png)](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-113888412)
 
 [Interactive visualization link](https://fenyolab.github.io/transposcope_ui/#/dashboard/ungrouped/ungrouped/tipseq_test?locus=chr1-113888412)
 

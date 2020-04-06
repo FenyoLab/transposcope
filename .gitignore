@@ -144,6 +144,7 @@ dmypy.json
 .venv/
 
 # End of https://www.gitignore.io/api/python
+<<<<<<< Updated upstream
 
 
 *.bb
@@ -151,3 +152,7 @@ dmypy.json
 *.swp
 
 .vscode/
+=======
+#
+web/*
+>>>>>>> Stashed changes

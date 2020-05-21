@@ -22,7 +22,7 @@ This command will create a new conda environment called 'transposcope_env' which
 
 Alternatively, TranspoScope can be installed into the current conda environment using the following command.
 ```console
-conda install transposcope
+conda install transposcope=2.0.1
 ```
 
 ### For more detailed usage instructions and examples, please use the Wiki.
